@@ -1,16 +1,25 @@
 const express = require('express');
 const app = express()
-const port = 3000;
+const cors = require('cors')
 require('dotenv').config()
 
+// CORS
+app.use(cors())
+const port = process.env.PORT || 4000
 
 // Connect to MongoDB
 const connectDB = require('./config/connectMongoDB')
 connectDB.connect()
 
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-app.get('/',(req, res) => {
-    res.send('Trang chủ')
+// Routes
+const authRoute = require('./routes/authRoute')
+app.use('/api/auth', authRoute)
+
+app.get('/healthcheck',(req, res) => {
+    res.send('Health check ok')
 })
 
 
