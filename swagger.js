@@ -8,9 +8,9 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Quiz Service API',
+      title: 'Smart Quiz API',
       version: '1.0.0',
-      description: 'API documentation for Quiz Service (Upload Materials + Quiz CRUD)',
+      description: 'API documentation for Smart Quiz application',
     },
     servers: [
       {
