@@ -3,6 +3,10 @@ const app = express()
 const cors = require('cors')
 require('dotenv').config()
 
+const authRoute = require('./routes/authRoute')
+const quizRoute = require('./routes/quizRoute')
+const materialRoute = require('./routes/materialRoute')
+
 // CORS
 app.use(cors())
 const port = process.env.PORT || 4000
@@ -15,8 +19,9 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Routes
-const authRoute = require('./routes/authRoute')
 app.use('/api/auth', authRoute)
+app.use('/api/quizzes', quizRoute)
+// app.use('/api/materials', materialRoute)
 
 app.get('/healthcheck',(req, res) => {
     res.send('Health check ok')
