@@ -3,6 +3,7 @@ const app = express()
 const cors = require('cors')
 require('dotenv').config()
 
+const swaggerDocs = require('./swagger')
 const authRoute = require('./routes/authRoute')
 const quizRoute = require('./routes/quizRoute')
 const materialRoute = require('./routes/materialRoute')
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoute)
 app.use('/api/quizzes', quizRoute)
 // app.use('/api/materials', materialRoute)
 
+swaggerDocs(app)
 app.get('/healthcheck',(req, res) => {
     res.send('Health check ok')
 })
