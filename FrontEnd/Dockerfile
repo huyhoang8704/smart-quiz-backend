@@ -18,3 +18,8 @@ EXPOSE 8080
 
 # Command to run the application in development mode with nodemon
 CMD ["npm", "run", "dev"]
+
+# Production
+# RUN npm run build
+# CMD ["npm", "run", "start"]
+#

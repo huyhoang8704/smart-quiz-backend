@@ -2,18 +2,19 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { jwtVerify, SignJWT } from "jose";
+import { JWTOptions } from "next-auth/jwt";
 
 // Optional: Define custom JWT encode/decode logic
-const jwt = {
+const jwt: Partial<JWTOptions> = {
     async encode({ token, secret }) {
         return new SignJWT(token)
             .setProtectedHeader({ alg: "HS256" })
             .setIssuedAt()
             .setExpirationTime("2h") // Adjust expiration as needed
-            .sign(new TextEncoder().encode(secret));
+            .sign(new TextEncoder().encode(secret as string));
     },
     async decode({ token, secret }) {
-        const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
+        const { payload } = await jwtVerify(token as string, new TextEncoder().encode(secret as string));
         return payload;
     },
 };
@@ -38,7 +39,8 @@ export const {
             },
             async authorize(credentials) {
                 // This is where you would call your backend API to validate credentials
-                const response = await fetch("http://localhost:4000/api/auth/login", {
+                // const response = await fetch("http://localhost:4000/api/auth/login", {
+                const response = await fetch(`${process.env.API_BASE_URL}/api/auth/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(credentials),
@@ -79,13 +81,13 @@ export const {
                 token.id = user.id;
                 token.email = user.email;
                 token.name = user.name;
-                token.role = user.role;
+                token.role = (user as any).role;
                 token.backendToken = user.backendToken; // Add your custom backend token to the JWT
             }
             return token;
         },
         // The `session` callback is called whenever a session is accessed.
-        async session({ session, token, ...args }) {
+        async session({ session, token, ...args }: any) {
             if (token) {
                 // The `token` object is the JWT token from the jwt callback.
                 session.user.id = token.id;
