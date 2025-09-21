@@ -9,6 +9,26 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  images: {
+    // remotePatterns: [new URL('https://avatars.githubusercontent.com/**')],
+    remotePatterns: [
+      {
+        protocol: 'https', // or 'http'
+        hostname: 'avatars.githubusercontent.com', // Replace with the hostname of your image source
+        port: '', // Optional: specify if a non-standard port is used
+        pathname: '/**', // Optional: specify a path pattern for images
+      },
+      // {
+      //   protocol: 'https',
+      //   hostname: 'another-domain.com', // Add more patterns for other remote sources
+      // },
+      // You can also use wildcards for hostname if needed (use with caution for security)
+      // {
+      //   protocol: 'https',
+      //   hostname: '**', // Allows all https hostnames (use with extreme caution)
+      // },
+    ],
+  },
 };
 
 export default nextConfig;

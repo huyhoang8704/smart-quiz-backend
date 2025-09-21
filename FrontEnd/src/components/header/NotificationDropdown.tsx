@@ -89,7 +89,7 @@ export default function NotificationDropdown() {
                 <Image
                   width={40}
                   height={40}
-                  src="/images/user/user-02.jpg"
+                  src="https://avatars.githubusercontent.com/u/30893021?v=4&size=64"
                   alt="User"
                   className="w-full overflow-hidden rounded-full"
                 />
@@ -235,7 +235,7 @@ export default function NotificationDropdown() {
                 <Image
                   width={40}
                   height={40}
-                  src="/images/user/user-02.jpg"
+                  src="https://avatars.githubusercontent.com/u/30893021?v=4&size=64"
                   alt="User"
                   className="w-full overflow-hidden rounded-full"
                 />
