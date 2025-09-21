@@ -7,7 +7,7 @@
     "test": "echo \"No tests yet\" && exit 0",
     "start": "nodemon app.js",
     "dev": "nodemon app.js",
-    "dev:docker": "docker compose up"
+    "dev:docker": "docker compose up --build --force-recreate"
   },
   "repository": {
     "type": "git",
