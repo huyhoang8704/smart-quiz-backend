@@ -2,11 +2,11 @@ version: "3.8"
 
 services:
   api:
-    build: .
+    build: ./BackEnd
     ports:
       - "4000:4000"
     volumes:
-      - .:/app # Mount the host project directory to the container's /app
+      - ./BackEnd:/app # Mount the host project directory to the container's /app
       - /app/node_modules # Ensure node_modules inside the container is not overwritten by host
 
   web:
