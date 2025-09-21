@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Expose the port your Express app listens on
-EXPOSE 3000
+EXPOSE 4000
 
 # Command to run the application in development mode with nodemon
 CMD ["npm", "run", "dev"]
