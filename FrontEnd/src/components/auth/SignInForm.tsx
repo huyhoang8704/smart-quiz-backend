@@ -1,15 +1,46 @@
 "use client";
+
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 export default function SignInForm() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+
+  const [email, setEmail] = useState("teacher@gmail.com");
+  const [password, setPassword] = useState("123456");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const result = await signIn("credentials", {
+        redirect: false, // Prevents automatic redirect on successful login
+        email,
+        password,
+      });
+
+      if (result?.error) {
+        console.log("🚀 ~ handleSubmit ~ result?.error:", result?.error)
+        // setError(result.error);
+      } else {
+        router.push("/"); // Redirect to the dashboard on success
+      }
+    } catch (err) {
+      console.log("🚀 ~ handleSubmit ~ err:", err)
+      // setError("An unexpected error occurred.");
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
@@ -84,13 +115,17 @@ export default function SignInForm() {
                 </span>
               </div>
             </div> */}
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 <div>
                   <Label>
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input placeholder="info@gmail.com" type="email" />
+                  <Input placeholder="info@gmail.com" type="email"
+                    defaultValue={email}
+                    name="email"
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label>
@@ -98,8 +133,11 @@ export default function SignInForm() {
                   </Label>
                   <div className="relative">
                     <Input
+                      name="password"
+                      defaultValue={password}
                       type={showPassword ? "text" : "password"}
                       placeholder="Nhập mật khẩu"
+                      onChange={(e) => setPassword(e.target.value)}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}

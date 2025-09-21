@@ -1,4 +1,4 @@
-// auth.ts
+
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { jwtVerify, SignJWT } from "jose";
@@ -49,14 +49,17 @@ export const {
                     return null; // Return null if login fails
                 }
 
-                const user = await response.json();
+                const data = await response.json();
+                const { user, token } = data;
 
                 // The user object returned here will be available in the JWT and session callbacks.
                 // It should contain at least an `id`.
                 return {
                     id: user.id,
                     email: user.email,
-                    backendToken: user.token, // Store your custom JWT token
+                    role: user.role,
+                    name: user.name,
+                    backendToken: token, // Store your custom JWT token
                 };
             },
         }),
@@ -75,17 +78,20 @@ export const {
                 // The `user` object is only present on sign-in.
                 token.id = user.id;
                 token.email = user.email;
+                token.name = user.name;
+                token.role = user.role;
                 token.backendToken = user.backendToken; // Add your custom backend token to the JWT
             }
             return token;
         },
         // The `session` callback is called whenever a session is accessed.
-        async session({ session, token }) {
-            console.log("🚀 ~ session ~ session, token:", session, token)
+        async session({ session, token, ...args }) {
             if (token) {
                 // The `token` object is the JWT token from the jwt callback.
                 session.user.id = token.id;
                 session.user.email = token.email;
+                session.user.name = token.name;
+                session.user.role = token.role;
                 session.user.backendToken = token.backendToken; // Add the custom token to the session
             }
             return session;
