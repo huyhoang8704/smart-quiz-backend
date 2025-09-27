@@ -7,6 +7,7 @@ const swaggerDocs = require("./swagger");
 const authRoute = require("./routes/authRoute");
 const quizRoute = require("./routes/quizRoute");
 const materialRoute = require("./routes/materialRoute");
+const quizAttemptRoute = require("./routes/quizAttemptRoutes");
 
 // CORS
 app.use(cors());
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoute);
 app.use("/api/quizzes", quizRoute);
 app.use("/api/materials", materialRoute);
+app.use("/api", quizAttemptRoute);
 
 swaggerDocs(app);
 app.get("/healthcheck", (req, res) => {
