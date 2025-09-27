@@ -27,7 +27,7 @@ const authorize = require('../middleware/roleMiddleware').authorize;
  *           example: "Nguyen Van A"
  *         email:
  *           type: string
- *           example: "teacher@gmail.com"
+ *           example: "hoang@gmail.com"
  *         password:
  *           type: string
  *           example: "123456"
@@ -119,7 +119,7 @@ router.post('/register/admin', auth, authorize('admin'), AuthController.register
  *             properties:
  *               email:
  *                 type: string
- *                 example: "student@example.com"
+ *                 example: "hoang@gmail.com"
  *               password:
  *                 type: string
  *                 example: "123456"

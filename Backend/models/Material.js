@@ -8,8 +8,14 @@ const materialSchema = new mongoose.Schema(
       required: true
     },
     title: { type: String, required: true },
-    type: { type: String, enum: ['text', 'pdf', 'video', 'slide'], required: true },
-    filePath: { type: String }, // lưu đường dẫn file nếu upload
+    // kiểu file: pdf, video, slide, text...
+    type: {
+      type: String,
+      enum: ['text', 'pdf', 'video', 'slide'],
+      required: true
+    },
+    filePath: { type: String }, // đường dẫn trong Supabase bucket
+    url: { type: String },      // public URL của file
     processedContent: { type: String }, // text rút ra từ học liệu
   },
   { timestamps: true }

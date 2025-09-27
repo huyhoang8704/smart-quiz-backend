@@ -1,69 +1,81 @@
 const Material = require("../models/Material");
+const supabase = require("../utils/supabaseClient");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
+const sanitizeFileName = require("../utils/sanitizeFileName");
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = "uploads/materials/";
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Generate unique filename: timestamp-originalname
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
-  },
+
+
+
+// Dùng memoryStorage để đọc file từ RAM
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
 });
 
-const fileFilter = (req, file, cb) => {
-  // Only allow PDF files
-  if (file.mimetype === "application/pdf") {
-    cb(null, true);
-  } else {
-    cb(new Error("Only PDF files are allowed"), false);
-  }
+const uploadFile = upload.single("file");
+
+// Hàm map mimetype -> type enum
+const mapFileType = (mimetype) => {
+  if (mimetype.includes("pdf")) return "pdf";
+  if (mimetype.includes("video")) return "video";
+  if (mimetype.includes("presentation")) return "slide"; // pptx, etc
+  return "text"; // fallback
 };
 
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-});
-
-// Middleware for single PDF upload
-const uploadPDF = upload.single("pdfFile");
-
-// Upload học liệu PDF
+// Upload học liệu (PDF, video, slide…)
 const uploadMaterial = async (req, res) => {
   try {
-    // Handle file upload first
-    uploadPDF(req, res, async function (err) {
+    uploadFile(req, res, async function (err) {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
 
       if (!req.file) {
-        return res.status(400).json({ error: "Please upload a PDF file" });
+        return res.status(400).json({ error: "Please upload a file" });
       }
 
       const { title, processedContent } = req.body;
-
       if (!title) {
         return res.status(400).json({ error: "Title is required" });
       }
 
+      // Tạo tên file an toàn
+      const safeFileName =
+        Date.now() + "-" + sanitizeFileName(req.file.originalname);
+
+      // Tạo đường dẫn trong bucket
+      const filePath = `materials/${req.user.id}/${safeFileName}`;
+
+      // Upload file lên Supabase
+      const { error: uploadError } = await supabase.storage
+        .from("materials") // bucket name
+        .upload(filePath, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        return res.status(500).json({ error: uploadError.message });
+      }
+
+      // Lấy public URL
+      const { data: urlData, error: urlError } = supabase.storage
+        .from("materials")
+        .getPublicUrl(filePath);
+
+      if (urlError) {
+        return res.status(500).json({ error: urlError.message });
+      }
+
+      // Lưu thông tin vào MongoDB
       const material = await Material.create({
         ownerId: req.user.id,
         title,
-        type: "pdf",
-        filePath: req.file.path,
+        type: mapFileType(req.file.mimetype),
+        filePath,
+        url: urlData.publicUrl, // Public URL để client tải
         processedContent: processedContent || "",
       });
 
@@ -77,7 +89,7 @@ const uploadMaterial = async (req, res) => {
 // Lấy danh sách học liệu của user
 const getMyMaterials = async (req, res) => {
   try {
-    const materials = await Material.find({ ownerId: req.user.id });
+    const materials = await Material.find({ ownerId: req.user._id });
     res.json(materials);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -91,7 +103,7 @@ const getMaterialById = async (req, res) => {
     if (!material)
       return res.status(404).json({ message: "Material not found" });
 
-    if (material.ownerId.toString() !== req.user.id) {
+    if (material.ownerId.toString() !== req.user._id.toString()) {
       return res
         .status(403)
         .json({ message: "Not authorized to view this material" });
@@ -110,15 +122,15 @@ const deleteMaterial = async (req, res) => {
     if (!material)
       return res.status(404).json({ message: "Material not found" });
 
-    if (material.ownerId.toString() !== req.user.id) {
+    if (material.ownerId.toString() !== req.user._id.toString()) {
       return res
         .status(403)
         .json({ message: "Not authorized to delete this material" });
     }
 
-    // Delete the physical file if it exists
-    if (material.filePath && fs.existsSync(material.filePath)) {
-      fs.unlinkSync(material.filePath);
+    // Xóa file trong Supabase Storage
+    if (material.filePath) {
+      await supabase.storage.from("materials").remove([material.filePath]);
     }
 
     await material.deleteOne();

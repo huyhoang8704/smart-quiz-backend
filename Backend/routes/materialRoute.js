@@ -61,13 +61,13 @@ const auth = require("../middleware/authMiddleware");
  *             type: object
  *             required:
  *               - title
- *               - pdfFile
+ *               - file
  *             properties:
  *               title:
  *                 type: string
  *                 description: Descriptive title for the material
  *                 example: "Java OOP Tutorial - Chapter 1"
- *               pdfFile:
+ *               file:
  *                 type: string
  *                 format: binary
  *                 description: PDF file to upload (max 10MB)
