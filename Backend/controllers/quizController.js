@@ -1,4 +1,5 @@
 const Quiz = require("../models/Quiz");
+const QuizAttempt = require("../models/QuizAttempt");
 const Material = require("../models/Material");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs").promises;
@@ -485,10 +486,60 @@ const deleteQuiz = async (req, res) => {
   }
 };
 
+// Sinh viên làm quiz
+const attemptQuiz = async (req, res) => {
+  try {
+    const { answers } = req.body;
+    const quiz = await Quiz.findById(req.params.id);
+
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+
+    let correctCount = 0;
+    const details = quiz.questions.map((q) => {
+      const userAnswerObj = answers.find((a) => a.questionId === q._id.toString());
+      const userAnswer = userAnswerObj ? userAnswerObj.answer : null;
+      const isCorrect = userAnswer && userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
+
+      if (isCorrect) correctCount++;
+
+      return {
+        questionId: q._id,
+        question: q.question,
+        correctAnswer: q.answer,
+        userAnswer,
+        isCorrect,
+      };
+    });
+
+    const attempt = new QuizAttempt({
+      quizId: quiz._id,
+      studentId: req.user.id, // lấy từ token
+      score: correctCount,
+      totalQuestions: quiz.questions.length,
+      correctAnswers: correctCount,
+      details,
+    });
+
+    await attempt.save();
+
+    res.json({
+      quizId: quiz._id,
+      score: correctCount,
+      totalQuestions: quiz.questions.length,
+      correctAnswers: correctCount,
+      details,
+      attemptId: attempt._id,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   generateQuiz,
   createQuiz,
   getQuizById,
   getMyQuizzes,
   deleteQuiz,
+  attemptQuiz,
 };

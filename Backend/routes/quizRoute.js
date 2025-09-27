@@ -119,7 +119,7 @@ router.post("/", auth, quizController.createQuiz);
 
 /**
  * @swagger
- * /quizzes/{id}:
+ * /api/quizzes/{id}:
  *   get:
  *     summary: Get quiz by ID
  *     tags: [Quiz]
@@ -142,7 +142,7 @@ router.get("/:id", auth, quizController.getQuizById);
 
 /**
  * @swagger
- * /quizzes:
+ * /api/quizzes:
  *   get:
  *     summary: Get quizzes created by the current teacher
  *     tags: [Quiz]
@@ -158,7 +158,7 @@ router.get("/", auth, quizController.getMyQuizzes);
 
 /**
  * @swagger
- * /quizzes/{id}:
+ * /api/quizzes/{id}:
  *   delete:
  *     summary: Delete a quiz by ID
  *     tags: [Quiz]
@@ -329,5 +329,55 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *                   error: "Internal server error"
  */
 router.post("/generate", auth, quizController.generateQuiz);
+
+
+/**
+ * @swagger
+ * /api/quizzes/{id}/attempt:
+ *   post:
+ *     summary: Attempt a quiz
+ *     description: Student submits answers and gets score
+ *     tags: [Quiz]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         example: "68cd3bbbc2675789057fe3f2"
+ *         schema:
+ *           type: string
+ *         description: Quiz ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               answers:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     questionId:
+ *                       type: string
+ *                     answer:
+ *                       type: string
+ *                 example:
+ *                   - questionId: "68cd3bbbc2675789057fe3f3"
+ *                     answer: "Ngôn ngữ lập trình"
+ *                   - questionId: "68cd3bbbc2675789057fe3f4"
+ *                     answer: "False"
+ *                   - questionId: "68cd3bbbc2675789057fe3f5"
+ *                     answer: "HTTP"
+ * 
+ *     responses:
+ *       200:
+ *         description: Quiz result
+ *       404:
+ *         description: Quiz not found
+ */
+router.post("/:id/attempt", auth, quizController.attemptQuiz);
 
 module.exports = router;
