@@ -18,6 +18,7 @@ import {
   UserCircleIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
+import { useSession } from "next-auth/react";
 
 type NavItem = {
   name: string;
@@ -91,6 +92,29 @@ const navItemsTeacher: NavItem[] = [
   },
 
 ];
+const navItemsStudent: NavItem[] = [
+  // {
+  //   icon: <GridIcon />,
+  //   name: "Quản lý",
+  //   path: "/",
+  // },
+  // {
+  //   icon: <UserCircleIcon />,
+  //   name: "Danh sách học viên",
+  //   path: "/studentlist",
+  // },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Danh sách bài quizz",
+    path: "/quizzs",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Danh sách bài đã kiểm tra",
+    path: "/studentquizzresults",
+  }
+
+];
 
 const othersItems: NavItem[] = [
   {
@@ -126,6 +150,18 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const { data } = useSession()
+  const isTeacher = data?.user?.role === 'teacher'
+  const isStudent = data?.user?.role === 'student'
+
+  const [isProduction, setIsProduction] = useState(false);
+
+  useEffect(() => {
+    // Check the NODE_ENV environment variable
+    if (process.env.NODE_ENV === 'production') {
+      setIsProduction(true);
+    }
+  }, []);
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -373,8 +409,9 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItemsTeacher, "main")}
-              {renderMenuItems(navItems, "main")}
+              {isTeacher && renderMenuItems(navItemsTeacher, "main")}
+              {isStudent && renderMenuItems(navItemsStudent, "main")}
+              {!isProduction && renderMenuItems(navItems, "main")}
             </div>
 
             <div className="">
