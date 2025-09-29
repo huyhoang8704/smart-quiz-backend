@@ -87,6 +87,11 @@ const navItemsTeacher: NavItem[] = [
   },
   {
     icon: <BoxCubeIcon />,
+    name: "Quản lý tài liệu",
+    path: "/materials",
+  },
+  {
+    icon: <BoxCubeIcon />,
     name: "Tạo bài quizz",
     path: "/quizzcreate",
   },

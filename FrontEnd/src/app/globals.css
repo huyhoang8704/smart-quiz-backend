@@ -1,4 +1,11 @@
 @import 'tailwindcss';
+@import url('datatables.net-dt');
+@import url('datatables.net-buttons-dt');
+@import url('datatables.net-colreorder-dt');
+@import url('datatables.net-columncontrol-dt');
+@import url('datatables.net-searchbuilder-dt');
+@import url('datatables.net-select-dt');
+
 
 @custom-variant dark (&:is(.dark *));
 
