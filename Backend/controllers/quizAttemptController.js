@@ -11,7 +11,7 @@ const getAttemptsByQuiz = async (req, res) => {
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
 
     // Kiểm tra user có phải là teacher của quiz không
-    if (quiz.ownerId !== req.user.id) {
+    if (quiz.ownerId.toString() !== req.user.id.toString()) {
       return res.status(403).json({ message: "Access denied" });
     }
 
