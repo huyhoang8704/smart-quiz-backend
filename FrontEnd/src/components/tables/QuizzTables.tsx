@@ -32,6 +32,7 @@ import ComponentCard from "../common/ComponentCard";
 import { hydrateRoot } from "react-dom/client";
 import QuizzView from "./QuizzView";
 import { useRouter } from "next/navigation";
+import CreateQuizzButton from "../quizz/CreateQuizzButton";
 
 DataTablesCore.Buttons.jszip(jszip);
 DataTablesCore.Buttons.pdfMake(pdfmake);
@@ -99,9 +100,7 @@ export default function QuizzTables() {
 
     <>
       <ComponentCard title="Chức năng">
-        <Button size="sm" variant="primary" endIcon={<BoxIcon />}>
-          Tạo quizz mới
-        </Button>
+        <CreateQuizzButton />
       </ComponentCard>
       <ComponentCard title="Danh sách">
 

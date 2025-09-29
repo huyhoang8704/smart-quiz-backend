@@ -8,6 +8,7 @@ import TextArea from "../form/input/TextArea";
 import { useState } from "react";
 import axiosInstance from "@/utils/axios";
 import { toast } from "react-toastify";
+import FileInput from "../form/input/FileInput";
 
 export default function UploadMaterial(props: { onSuccess?: () => void }) {
     const { isOpen, openModal, closeModal } = useModal();
@@ -37,8 +38,8 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
         })
 
         if (rs.data) {
-            toast("Tải lên tài liệu thành công!", {
-                position: "top-right",
+            toast.success("Tải lên tài liệu thành công!", {
+                position: "bottom-right",
                 autoClose: 5000,
                 hideProgressBar: false,
                 closeOnClick: false,
@@ -52,6 +53,8 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
             setSelectedFile(null)
             closeModal();
             props.onSuccess?.()
+        } else {
+            toast.error("Tải lên tài liệu thất bại!", { position: "bottom-right" })
         }
         // rs.statusText
         // closeModal();
@@ -90,8 +93,7 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
 
                                 <div>
                                     <Label>Chọn file</Label>
-                                    <Input
-                                        type="file"
+                                    <FileInput
                                         onChange={handleFileChange}
                                     />
                                 </div>

@@ -33,6 +33,7 @@ import { hydrateRoot } from "react-dom/client";
 import QuizzView from "./QuizzView";
 import { useRouter } from "next/navigation";
 import UploadMaterial from "../materials/UploadMaterial";
+import { toast } from "react-toastify";
 
 DataTablesCore.Buttons.jszip(jszip);
 DataTablesCore.Buttons.pdfMake(pdfmake);
@@ -45,6 +46,7 @@ const getListData = async () => {
   console.log(rs.data)
   return rs.data
 }
+
 
 export default function MaterialsTable() {
   const [tableData, setTableData] = useState<{
@@ -67,29 +69,59 @@ export default function MaterialsTable() {
     })
   }, [])
 
+  const deleteFile = async (id: string) => {
+    const rs = await axiosInstance(`/api/materials/${id}`, {
+      method: "DELETE",
+    })
+
+    console.log("🚀 ~ deleteFile ~ rs.data:", rs.data)
+    if (rs?.data?.message === "Material deleted successfully") {
+      toast.success("Xoá file thành công!", {
+        position: "bottom-right",
+      })
+      getListData().then(async x => {
+        setTableData(x)
+      })
+    } else {
+      toast.error("Xoá file thất bại!", {
+        position: "bottom-right",
+      })
+    }
+    return rs.data
+  }
+
+
   const columns: ConfigColumns[] = [
     { data: '_id', visible: false, },
     { data: 'title', title: "Tên file" },
     { data: 'type', title: "Loại file" },
-    // {
-    //   data: '_id', // No data source for this column, we'll render it manually
-    //   // defaultContent: <Button size="sm" variant="primary" endIcon={<BoxIcon />}>
-    //   //   Tạo quizz mới
-    //   // </Button>, // Default button HTML
-    //   // render: () = '',
-    //   createdCell: function (cell, data, row) {
-    //     hydrateRoot(
-    //       cell,
-    //       <Button size="sm" variant="primary" onClick={() => {
-    //         push(`/quizzs/${data}`)
-    //       }}>
-    //         Xem
-    //       </Button>
-    //     );
-    //   },
-    //   orderable: false, // Prevent sorting on this column
-    //   searchable: false // Prevent searching on this column
-    // }
+    { data: 'processedContent', title: "Mô tả" },
+    {
+      data: '_id', // No data source for this column, we'll render it manually
+      // defaultContent: <Button size="sm" variant="primary" endIcon={<BoxIcon />}>
+      //   Tạo quizz mới
+      // </Button>, // Default button HTML
+      // render: () = '',
+      createdCell: function (cell, data, row) {
+        hydrateRoot(
+          cell,
+          <div className="flex items-center gap-5">
+            {/* <Button size="sm" variant="primary" onClick={() => {
+              push(`/quizzs/${data}`)
+            }}>
+              Tải
+            </Button> */}
+            <Button size="sm" variant="primary" className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={() => {
+              deleteFile(data)
+            }}>
+              Xoá
+            </Button>
+          </div>
+        );
+      },
+      orderable: false, // Prevent sorting on this column
+      searchable: false // Prevent searching on this column
+    }
   ];
 
   return (
