@@ -183,11 +183,26 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  * @swagger
  * /api/quizzes/generate:
  *   post:
- *     summary: Generate quiz from material using Google Gemini AI
+ *     summary: Generate quiz with detailed question type configurations
  *     description: |
- *       Generate an intelligent quiz from uploaded PDF material using Google Gemini AI.
- *       The system uses text-based AI generation for better reliability and performance.
- *       If AI generation fails due to quota limits, the system automatically falls back to mock data.
+ *       Generate intelligent quizzes from uploaded materials using Google Gemini AI.
+ *
+ *       ## Key Features:
+ *       - **Detailed Configuration**: Specify exact count and difficulty for each question type
+ *       - **Mixed Question Types**: Combine MCQ, True/False, and Fill-in-the-blank in one quiz
+ *       - **Individual Difficulty**: Set different difficulty levels for different question types
+ *       - **Focus Areas**: Target specific topics within the material
+ *       - **Smart Fallback**: Automatic fallback when AI quota is exceeded
+ *
+ *       ## Question Types:
+ *       - **MCQ (Multiple Choice)**: 3-4 options with one correct answer
+ *       - **True/False**: Binary choice questions
+ *       - **Fill-blank**: Questions with missing words to complete
+ *
+ *       ## Difficulty Levels:
+ *       - **Easy**: Basic concepts and definitions
+ *       - **Medium**: Application and understanding
+ *       - **Hard**: Analysis, synthesis, and evaluation
  *     tags: [Quiz]
  *     security:
  *       - bearerAuth: []
@@ -199,35 +214,112 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *             type: object
  *             required:
  *               - materialId
+ *               - settings
  *             properties:
  *               materialId:
  *                 type: string
- *                 description: ID of the PDF material to generate quiz from (must be type 'pdf')
+ *                 description: ID of the material to generate quiz from
  *                 example: "64fa0c1e23abc1234def5679"
- *               options:
+ *               settings:
  *                 type: object
- *                 description: Optional quiz generation settings
+ *                 required:
+ *                   - questionConfigs
  *                 properties:
- *                   title:
+ *                   questionConfigs:
+ *                     type: array
+ *                     description: Detailed configuration for each question type
+ *                     items:
+ *                       type: object
+ *                       required:
+ *                         - type
+ *                         - count
+ *                         - difficulty
+ *                       properties:
+ *                         type:
+ *                           type: string
+ *                           enum: [mcq, truefalse, fillblank]
+ *                           description: Type of question
+ *                         count:
+ *                           type: integer
+ *                           minimum: 1
+ *                           maximum: 20
+ *                           description: Number of questions of this type
+ *                         difficulty:
+ *                           type: string
+ *                           enum: [easy, medium, hard]
+ *                           description: Difficulty level for this question type
+ *                     example:
+ *                       - type: "mcq"
+ *                         count: 5
+ *                         difficulty: "hard"
+ *                       - type: "truefalse"
+ *                         count: 3
+ *                         difficulty: "medium"
+ *                       - type: "fillblank"
+ *                         count: 2
+ *                         difficulty: "easy"
+ *                   customTitle:
  *                     type: string
- *                     description: Custom title for the quiz (defaults to "Quiz for {material.title}")
- *                     example: "Quiz về OOP trong Java"
- *                   numQuestions:
- *                     type: integer
- *                     description: Number of questions to generate
- *                     example: 5
- *                     minimum: 1
- *                     maximum: 20
- *                     default: 5
- *                   difficulty:
+ *                     description: Custom title for the quiz
+ *                     example: "Quiz nâng cao về Machine Learning"
+ *                   focusAreas:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                     description: Specific topics to focus on
+ *                     example: ["khái niệm cơ bản", "ví dụ thực tế", "ứng dụng"]
+ *                   customInstructions:
  *                     type: string
- *                     enum: [easy, medium, hard]
- *                     description: Difficulty level of questions
- *                     example: "medium"
- *                     default: "medium"
+ *                     description: Additional instructions for question generation
+ *                     example: "Tập trung vào so sánh các thuật toán"
+ *           examples:
+ *             mixedDifficulty:
+ *               summary: Mixed Question Types with Different Difficulties
+ *               value:
+ *                 materialId: "64fa0c1e23abc1234def5679"
+ *                 settings:
+ *                   questionConfigs:
+ *                     - type: "mcq"
+ *                       count: 8
+ *                       difficulty: "hard"
+ *                     - type: "truefalse"
+ *                       count: 4
+ *                       difficulty: "medium"
+ *                     - type: "fillblank"
+ *                       count: 3
+ *                       difficulty: "easy"
+ *                   customTitle: "Quiz Comprehensive về AI"
+ *                   focusAreas: ["machine learning", "deep learning", "neural networks"]
+ *                   customInstructions: "Tập trung vào ứng dụng thực tế"
+ *             basicConfiguration:
+ *               summary: Basic Configuration
+ *               value:
+ *                 materialId: "64fa0c1e23abc1234def5679"
+ *                 settings:
+ *                   questionConfigs:
+ *                     - type: "mcq"
+ *                       count: 10
+ *                       difficulty: "medium"
+ *             advancedConfiguration:
+ *               summary: Advanced Multi-Type Configuration
+ *               value:
+ *                 materialId: "64fa0c1e23abc1234def5679"
+ *                 settings:
+ *                   questionConfigs:
+ *                     - type: "mcq"
+ *                       count: 6
+ *                       difficulty: "hard"
+ *                     - type: "truefalse"
+ *                       count: 6
+ *                       difficulty: "hard"
+ *                     - type: "fillblank"
+ *                       count: 3
+ *                       difficulty: "medium"
+ *                   customTitle: "Đề thi cuối kỳ - Advanced Topics"
+ *                   focusAreas: ["lý thuyết nâng cao", "phân tích case study"]
  *     responses:
  *       201:
- *         description: Quiz generated successfully using AI
+ *         description: Quiz generated successfully with detailed configuration
  *         content:
  *           application/json:
  *             schema:
@@ -236,24 +328,41 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *               _id: "64fa0c1e23abc1234def5680"
  *               ownerId: "64fa0c1e23abc1234def5678"
  *               materialId: "64fa0c1e23abc1234def5679"
- *               title: "Quiz về OOP trong Java"
+ *               title: "Quiz Comprehensive về AI"
  *               settings:
- *                 numQuestions: 5
- *                 difficulty: "medium"
+ *                 totalQuestions: 15
+ *                 questionConfigs:
+ *                   - type: "mcq"
+ *                     count: 8
+ *                     difficulty: "hard"
+ *                   - type: "truefalse"
+ *                     count: 4
+ *                     difficulty: "medium"
+ *                   - type: "fillblank"
+ *                     count: 3
+ *                     difficulty: "easy"
+ *                 focusAreas: ["machine learning", "deep learning"]
+ *                 customInstructions: "Tập trung vào ứng dụng thực tế"
  *               questions:
- *                 - question: "Inheritance trong Java là gì?"
+ *                 - question: "Machine Learning thuộc lĩnh vực nào của AI?"
  *                   type: "mcq"
- *                   options: ["Khả năng kế thừa", "Tạo object", "Ẩn giấu dữ liệu", "Đa hình"]
- *                   answer: "Khả năng kế thừa"
- *                 - question: "Encapsulation giúp bảo vệ dữ liệu"
+ *                   options: ["Computer Vision", "Natural Language Processing", "Data Science", "Tất cả các lĩnh vực trên"]
+ *                   answer: "Tất cả các lĩnh vực trên"
+ *                   difficulty: "hard"
+ *                 - question: "Neural Networks được sử dụng trong Deep Learning"
  *                   type: "truefalse"
  *                   options: ["True", "False"]
  *                   answer: "True"
+ *                   difficulty: "medium"
+ *                 - question: "Thuật toán _____ được sử dụng để tối ưu hóa neural networks"
+ *                   type: "fillblank"
+ *                   options: []
+ *                   answer: "backpropagation"
+ *                   difficulty: "easy"
  *               createdAt: "2023-09-08T10:30:00.000Z"
  *               updatedAt: "2023-09-08T10:30:00.000Z"
- *               warning: "Generated using fallback data due to API quota limits"
  *       400:
- *         description: Bad request
+ *         description: Bad request - Invalid configuration or missing parameters
  *         content:
  *           application/json:
  *             schema:
@@ -261,17 +370,33 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *               properties:
  *                 error:
  *                   type: string
+ *                 example:
+ *                   type: object
  *             examples:
  *               missingMaterialId:
  *                 value:
  *                   error: "Material ID is required"
- *               notPdf:
+ *               missingSettings:
  *                 value:
- *                   error: "Material must be a PDF file with valid file path"
+ *                   error: "Settings with questionConfigs is required"
+ *                   example:
+ *                     questionConfigs:
+ *                       - type: "mcq"
+ *                         count: 5
+ *                         difficulty: "medium"
+ *               invalidQuestionType:
+ *                 value:
+ *                   error: "Invalid question type: invalid_type. Valid types: mcq, truefalse, fillblank"
+ *               invalidDifficulty:
+ *                 value:
+ *                   error: "Invalid difficulty: invalid_diff. Valid difficulties: easy, medium, hard"
+ *               invalidCount:
+ *                 value:
+ *                   error: "Invalid count for mcq: 25. Must be between 1 and 20"
  *       401:
- *         description: Unauthorized - invalid or missing JWT token
+ *         description: Unauthorized - Invalid or expired token
  *       403:
- *         description: Forbidden - not authorized to use this material
+ *         description: Forbidden - Insufficient permissions
  *         content:
  *           application/json:
  *             schema:
@@ -282,7 +407,7 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *               example:
  *                 error: "Not authorized to use this material"
  *       404:
- *         description: Material not found or file not found on server
+ *         description: Material not found
  *         content:
  *           application/json:
  *             schema:
@@ -290,13 +415,8 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *               properties:
  *                 error:
  *                   type: string
- *             examples:
- *               materialNotFound:
- *                 value:
- *                   error: "Material not found"
- *               fileNotFound:
- *                 value:
- *                   error: "Material file not found on server"
+ *               example:
+ *                 error: "Material not found"
  *       429:
  *         description: API quota exceeded - using fallback data
  *         content:
@@ -329,7 +449,6 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *                   error: "Internal server error"
  */
 router.post("/generate", auth, quizController.generateQuiz);
-
 
 /**
  * @swagger
@@ -371,7 +490,7 @@ router.post("/generate", auth, quizController.generateQuiz);
  *                     answer: "False"
  *                   - questionId: "68cd3bbbc2675789057fe3f5"
  *                     answer: "HTTP"
- * 
+ *
  *     responses:
  *       200:
  *         description: Quiz result
@@ -379,5 +498,32 @@ router.post("/generate", auth, quizController.generateQuiz);
  *         description: Quiz not found
  */
 router.post("/:id/attempt", auth, quizController.attemptQuiz);
+
+/**
+ * @swagger
+ * /api/quizzes/debug/models:
+ *   get:
+ *     summary: Debug endpoint to check available Gemini models
+ *     tags: [Quiz]
+ *     responses:
+ *       200:
+ *         description: List of available models and their status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 availableModels:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 testedModel:
+ *                   type: string
+ *                 testResult:
+ *                   type: object
+ */
+router.get("/debug/models", quizController.debugModels);
 
 module.exports = router;
