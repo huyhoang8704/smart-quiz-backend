@@ -7,7 +7,6 @@ const path = require("path");
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Thay đổi từ pro sang flash
 
 // Helper function to upload PDF to Gemini File API
 async function uploadPdfToGemini(filePath) {
@@ -146,6 +145,8 @@ Yêu cầu:
   };
 
   try {
+    const model = await getAvailableModel();
+
     const result = await model.generateContent({
       contents: [
         { role: "user", parts: [{ text: systemPrompt }] },
@@ -186,19 +187,182 @@ Yêu cầu:
   }
 }
 
-// Helper function to generate quiz using text content (fallback approach)
+// Helper function to parse natural language configuration
+function parseNaturalLanguageConfig(naturalConfig) {
+  const config = {
+    numQuestions: 5,
+    difficulty: "medium",
+    questionTypes: ["mcq", "truefalse"],
+    focusAreas: [],
+    specificRequirements: [],
+  };
+
+  if (!naturalConfig) return config;
+
+  const text = naturalConfig.toLowerCase();
+
+  // Parse number of questions
+  const numMatch = text.match(/(\d+)\s*(câu|question)/i);
+  if (numMatch) {
+    config.numQuestions = parseInt(numMatch[1]);
+  }
+
+  // Parse difficulty
+  if (text.includes("dễ") || text.includes("easy")) config.difficulty = "easy";
+  if (
+    text.includes("khó") ||
+    text.includes("hard") ||
+    text.includes("nâng cao")
+  )
+    config.difficulty = "hard";
+  if (
+    text.includes("trung bình") ||
+    text.includes("medium") ||
+    text.includes("vừa")
+  )
+    config.difficulty = "medium";
+
+  // Parse question types
+  const types = [];
+  if (
+    text.includes("trắc nghiệm") ||
+    text.includes("multiple choice") ||
+    text.includes("mcq")
+  )
+    types.push("mcq");
+  if (
+    text.includes("đúng sai") ||
+    text.includes("true false") ||
+    text.includes("truefalse")
+  )
+    types.push("truefalse");
+  if (
+    text.includes("điền chỗ trống") ||
+    text.includes("fill") ||
+    text.includes("blank")
+  )
+    types.push("fillblank");
+  if (types.length > 0) config.questionTypes = types;
+
+  // Parse focus areas
+  const focusKeywords = [
+    "khái niệm",
+    "định nghĩa",
+    "lý thuyết",
+    "ví dụ",
+    "ứng dụng",
+    "thực hành",
+    "so sánh",
+    "phân tích",
+    "tổng hợp",
+    "đánh giá",
+  ];
+  focusKeywords.forEach((keyword) => {
+    if (text.includes(keyword)) config.focusAreas.push(keyword);
+  });
+
+  // Parse specific requirements
+  if (text.includes("tập trung vào") || text.includes("chú trọng")) {
+    const focusMatch = text.match(/(?:tập trung vào|chú trọng)\s*([^.,;]+)/i);
+    if (focusMatch) config.specificRequirements.push(focusMatch[1].trim());
+  }
+
+  return config;
+}
+
+// Helper function to get available model with fallback
+async function getAvailableModel() {
+  // Updated models based on debug response - these are actually available
+  const models = [
+    "gemini-2.5-pro-preview-03-25",
+    "gemini-2.5-flash",
+    "gemini-1.5-pro",
+    "gemini-1.5-flash",
+    "models/gemini-1.5-pro",
+    "models/gemini-1.5-flash",
+  ];
+
+  for (const modelName of models) {
+    try {
+      console.log(`Testing model: ${modelName}`);
+      const testModel = genAI.getGenerativeModel({ model: modelName });
+
+      // Test if model is available with a minimal request
+      const testResult = await testModel.generateContent({
+        contents: [{ role: "user", parts: [{ text: "test" }] }],
+      });
+
+      if (testResult && testResult.response) {
+        console.log(`✅ Successfully using model: ${modelName}`);
+        return testModel;
+      }
+    } catch (error) {
+      console.log(
+        `❌ Model ${modelName} not available: ${error.status || error.message}`
+      );
+      continue;
+    }
+  }
+
+  // If all models fail, throw an error with useful information
+  throw new Error(
+    "No Gemini models are currently available. Please check your API key and try again later."
+  );
+}
+
+// Helper function to generate quiz using text content with detailed settings
 async function generateQuizWithText({
   material,
   ownerId,
   materialId,
   title,
-  numQuestions,
-  difficulty,
+  settings,
 }) {
+  // Parse question configurations from settings
+  const questionConfigs = settings.questionConfigs || [
+    { type: "mcq", count: 3, difficulty: "medium" },
+    { type: "truefalse", count: 2, difficulty: "medium" },
+  ];
+
+  const totalQuestions = questionConfigs.reduce(
+    (sum, config) => sum + config.count,
+    0
+  );
+  const focusAreas = settings.focusAreas || [];
+  const customInstructions = settings.customInstructions || "";
+
   const systemPrompt = `
-Bạn là trợ lý tạo đề trắc nghiệm. Tạo câu hỏi dựa vào thông tin tài liệu được cung cấp.
-Chỉ tạo câu hỏi dựa vào nội dung đã cho; nếu thiếu dữ kiện, tạo câu hỏi tổng quát về chủ đề.
+Bạn là trợ lý tạo đề trắc nghiệm chuyên nghiệp. Tạo câu hỏi dựa vào thông tin tài liệu được cung cấp.
+Tạo câu hỏi chất lượng cao, phù hợp với yêu cầu cụ thể của người dùng về từng loại câu hỏi.
 Không lộ đáp án trong phần câu hỏi. Trả về JSON đúng định dạng.`;
+
+  // Build detailed question requirements
+  const questionRequirements = questionConfigs
+    .map((config) => {
+      const typeText =
+        {
+          mcq: "trắc nghiệm nhiều lựa chọn",
+          truefalse: "đúng/sai",
+          fillblank: "điền chỗ trống",
+        }[config.type] || config.type;
+
+      const difficultyText =
+        {
+          easy: "dễ",
+          medium: "trung bình",
+          hard: "khó",
+        }[config.difficulty] || config.difficulty;
+
+      return `${config.count} câu ${typeText} mức độ ${difficultyText}`;
+    })
+    .join(", ");
+
+  const focusAreasText =
+    focusAreas.length > 0 ? `\n- Tập trung vào: ${focusAreas.join(", ")}` : "";
+
+  const customInstructionsText = customInstructions
+    ? `\n- Hướng dẫn thêm: ${customInstructions}`
+    : "";
 
   const userPrompt = `
 Tạo quiz với:
@@ -207,13 +371,21 @@ Tạo quiz với:
 - Nội dung có sẵn: "${
     material.processedContent || "Không có nội dung được xử lý"
   }"
-- Số câu hỏi: ${numQuestions}
-- Độ khó: ${difficulty}
+- Tổng số câu hỏi: ${totalQuestions}
+- Cấu hình chi tiết: ${questionRequirements}${focusAreasText}${customInstructionsText}
 
-Yêu cầu:
-- Mỗi câu hỏi "type":"mcq" có 3–4 "options" và một "answer" đúng.
-- Có thể tạo câu hỏi "type":"truefalse" với options ["True", "False"].
-- Trả về JSON với cấu trúc: {title, settings: {numQuestions, difficulty}, questions: [{question, type, options, answer}]}
+Yêu cầu chi tiết:
+- Tạo chính xác số lượng câu hỏi theo từng loại đã chỉ định
+- Đảm bảo mức độ khó phù hợp cho từng loại câu hỏi:
+  + MCQ (trắc nghiệm): tạo 3-4 lựa chọn hợp lý, 1 đáp án chính xác
+  + True/False (đúng/sai): tạo câu hỏi rõ ràng với options ["True", "False"]
+  + Fill-blank (điền chỗ trống): tạo câu có chỗ trống cần điền, không có options
+- Mức độ khó:
+  + Dễ: câu hỏi đơn giản, kiến thức cơ bản
+  + Trung bình: yêu cầu hiểu biết và áp dụng
+  + Khó: phân tích, tổng hợp, đánh giá cao
+- Câu hỏi phải dựa trên nội dung tài liệu
+- Trả về JSON với cấu trúc: {title, settings: {totalQuestions, questionConfigs}, questions: [{question, type, options, answer, difficulty}]}
 `;
 
   const responseSchema = {
@@ -223,10 +395,27 @@ Yêu cầu:
       settings: {
         type: "object",
         properties: {
-          numQuestions: { type: "integer" },
-          difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
+          totalQuestions: { type: "integer" },
+          questionConfigs: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                type: {
+                  type: "string",
+                  enum: ["mcq", "truefalse", "fillblank"],
+                },
+                count: { type: "integer" },
+                difficulty: {
+                  type: "string",
+                  enum: ["easy", "medium", "hard"],
+                },
+              },
+              required: ["type", "count", "difficulty"],
+            },
+          },
         },
-        required: ["numQuestions", "difficulty"],
+        required: ["totalQuestions", "questionConfigs"],
       },
       questions: {
         type: "array",
@@ -237,8 +426,9 @@ Yêu cầu:
             type: { type: "string", enum: ["mcq", "truefalse", "fillblank"] },
             options: { type: "array", items: { type: "string" } },
             answer: { type: "string" },
+            difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
           },
-          required: ["question", "type", "answer"],
+          required: ["question", "type", "answer", "difficulty"],
         },
       },
     },
@@ -246,7 +436,10 @@ Yêu cầu:
   };
 
   try {
-    const result = await model.generateContent({
+    // Get available model dynamically
+    const availableModel = await getAvailableModel();
+
+    const result = await availableModel.generateContent({
       contents: [
         { role: "user", parts: [{ text: systemPrompt }] },
         { role: "user", parts: [{ text: userPrompt }] },
@@ -267,27 +460,89 @@ Yêu cầu:
       ],
     });
 
-    const quizData = JSON.parse(result.response.text());
+    const responseText = result.response.text();
+    console.log("AI Response:", responseText);
+
+    const quizData = JSON.parse(responseText);
 
     // Ensure required fields are set
     quizData.ownerId = ownerId;
     quizData.materialId = materialId;
 
+    // Update settings with correct structure
+    quizData.settings = {
+      totalQuestions: totalQuestions,
+      questionConfigs: questionConfigs,
+      focusAreas: focusAreas,
+      customInstructions: customInstructions,
+    };
+
     return quizData;
   } catch (error) {
     console.error("Error generating quiz with text:", error);
+
+    // Handle specific API errors
+    if (error.status === 404) {
+      throw new Error(
+        `Gemini model not found. This might be due to API version changes. Error: ${error.message}`
+      );
+    } else if (error.status === 403) {
+      throw new Error(
+        `Access denied to Gemini API. Please check your API key permissions.`
+      );
+    } else if (error.status === 429) {
+      throw new Error(`Gemini API quota exceeded. Please try again later.`);
+    }
+
     throw error;
   }
 }
-
-// Generate quiz từ học liệu using Gemini AI
+// Generate quiz from material using Gemini AI with detailed settings
 const generateQuiz = async (req, res) => {
   try {
-    const { materialId, options } = req.body;
+    const { materialId, settings } = req.body;
 
     // Validate required fields
     if (!materialId) {
       return res.status(400).json({ error: "Material ID is required" });
+    }
+
+    if (!settings || !settings.questionConfigs) {
+      return res.status(400).json({
+        error: "Settings with questionConfigs is required",
+        example: {
+          questionConfigs: [
+            { type: "mcq", count: 5, difficulty: "medium" },
+            { type: "truefalse", count: 3, difficulty: "easy" },
+          ],
+        },
+      });
+    }
+
+    // Validate question configurations
+    const validTypes = ["mcq", "truefalse", "fillblank"];
+    const validDifficulties = ["easy", "medium", "hard"];
+
+    for (const config of settings.questionConfigs) {
+      if (!validTypes.includes(config.type)) {
+        return res.status(400).json({
+          error: `Invalid question type: ${
+            config.type
+          }. Valid types: ${validTypes.join(", ")}`,
+        });
+      }
+      if (!validDifficulties.includes(config.difficulty)) {
+        return res.status(400).json({
+          error: `Invalid difficulty: ${
+            config.difficulty
+          }. Valid difficulties: ${validDifficulties.join(", ")}`,
+        });
+      }
+      if (!config.count || config.count < 1 || config.count > 20) {
+        return res.status(400).json({
+          error: `Invalid count for ${config.type}: ${config.count}. Must be between 1 and 20`,
+        });
+      }
     }
 
     // Debug: Check if API key exists
@@ -303,13 +558,6 @@ const generateQuiz = async (req, res) => {
       return res.status(404).json({ error: "Material not found" });
     }
 
-    // Check if material has a file path and is PDF
-    if (!material.filePath || material.type !== "pdf") {
-      return res
-        .status(400)
-        .json({ error: "Material must be a PDF file with valid file path" });
-    }
-
     // Check if user owns the material or has permission
     if (
       material.ownerId.toString() !== req.user.id &&
@@ -320,31 +568,19 @@ const generateQuiz = async (req, res) => {
         .json({ error: "Not authorized to use this material" });
     }
 
-    // Parse options with defaults
-    const numQuestions = options?.numQuestions || 5;
-    const difficulty = options?.difficulty || "medium";
-    const title = options?.title || `Quiz for ${material.title}`;
+    const title = settings.customTitle || `Quiz for ${material.title}`;
 
-    // Validate file exists
-    const filePath = path.resolve(material.filePath);
-    try {
-      await fs.access(filePath);
-    } catch (error) {
-      return res
-        .status(404)
-        .json({ error: "Material file not found on server" });
-    }
+    console.log("Question configurations:", settings.questionConfigs);
+    console.log("Focus areas:", settings.focusAreas);
 
-    // Try to generate quiz with Gemini AI (without file upload)
+    // Try to generate quiz with Gemini AI using detailed settings
     try {
-      // Use text-based approach instead of file upload for now
       const quizData = await generateQuizWithText({
         material,
         ownerId: req.user.id,
         materialId,
         title,
-        numQuestions,
-        difficulty,
+        settings,
       });
 
       // Create quiz in database
@@ -365,35 +601,68 @@ const generateQuiz = async (req, res) => {
       ) {
         console.log("Gemini quota exceeded, using fallback mock data");
 
-        const mockQuestions = [
-          {
-            question: `Nội dung chính của tài liệu "${material.title}" là gì?`,
-            type: "mcq",
-            options: [
-              "Khái niệm cơ bản",
-              "Ví dụ thực tế",
-              "Lý thuyết nâng cao",
-              "Tất cả các ý trên",
-            ],
-            answer: "Tất cả các ý trên",
-          },
-          {
-            question: `Tài liệu "${material.title}" có đề cập đến các khái niệm quan trọng?`,
-            type: "truefalse",
-            options: ["True", "False"],
-            answer: "True",
-          },
-        ];
+        const mockQuestions = [];
+        let questionIndex = 1;
+
+        // Generate questions based on each configuration
+        for (const config of settings.questionConfigs) {
+          for (let i = 0; i < Math.min(config.count, 3); i++) {
+            // Limit to 3 per type for mock
+            const difficultyPrefix =
+              {
+                easy: "Câu dễ",
+                medium: "Câu trung bình",
+                hard: "Câu khó",
+              }[config.difficulty] || "Câu";
+
+            if (config.type === "mcq") {
+              mockQuestions.push({
+                question: `${difficultyPrefix} ${questionIndex}: Nội dung chính của tài liệu "${material.title}" thuộc chủ đề nào?`,
+                type: "mcq",
+                options: [
+                  "Khái niệm cơ bản và lý thuyết",
+                  "Ví dụ thực tế và ứng dụng",
+                  "Phương pháp và kỹ thuật",
+                  "Tất cả các ý trên",
+                ],
+                answer: "Tất cả các ý trên",
+                difficulty: config.difficulty,
+              });
+            } else if (config.type === "truefalse") {
+              mockQuestions.push({
+                question: `${difficultyPrefix} ${questionIndex}: Tài liệu "${material.title}" cung cấp thông tin hữu ích cho người học`,
+                type: "truefalse",
+                options: ["True", "False"],
+                answer: "True",
+                difficulty: config.difficulty,
+              });
+            } else if (config.type === "fillblank") {
+              mockQuestions.push({
+                question: `${difficultyPrefix} ${questionIndex}: Tài liệu "${material.title}" tập trung vào chủ đề _____`,
+                type: "fillblank",
+                options: [],
+                answer: "học tập",
+                difficulty: config.difficulty,
+              });
+            }
+            questionIndex++;
+          }
+        }
 
         const quiz = await Quiz.create({
           ownerId: req.user.id,
           materialId,
           title: title + " (Mock)",
           settings: {
-            numQuestions: Math.min(numQuestions, mockQuestions.length),
-            difficulty,
+            totalQuestions: mockQuestions.length,
+            questionConfigs: settings.questionConfigs.map((config) => ({
+              ...config,
+              count: Math.min(config.count, 3), // Actual count in mock data
+            })),
+            focusAreas: settings.focusAreas || [],
+            note: "Generated using fallback data due to API quota limits",
           },
-          questions: mockQuestions.slice(0, numQuestions),
+          questions: mockQuestions,
         });
 
         return res.status(201).json({
@@ -496,9 +765,13 @@ const attemptQuiz = async (req, res) => {
 
     let correctCount = 0;
     const details = quiz.questions.map((q) => {
-      const userAnswerObj = answers.find((a) => a.questionId === q._id.toString());
+      const userAnswerObj = answers.find(
+        (a) => a.questionId === q._id.toString()
+      );
       const userAnswer = userAnswerObj ? userAnswerObj.answer : null;
-      const isCorrect = userAnswer && userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
+      const isCorrect =
+        userAnswer &&
+        userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
 
       if (isCorrect) correctCount++;
 
@@ -535,6 +808,49 @@ const attemptQuiz = async (req, res) => {
   }
 };
 
+// Debug endpoint to check available models
+const debugModels = async (req, res) => {
+  try {
+    const {
+      listAvailableModels,
+      getBestAvailableModel,
+      testModel,
+    } = require("../utils/geminiUtils");
+
+    console.log("Starting model debug check...");
+
+    // List all available models
+    const availableModels = await listAvailableModels();
+    console.log("Available models:", availableModels);
+
+    // Get best available model
+    const bestModel = await getBestAvailableModel();
+    console.log("Best available model:", bestModel);
+
+    // Test the best model
+    let testResult = null;
+    if (bestModel) {
+      testResult = await testModel(bestModel);
+      console.log("Test result:", testResult);
+    }
+
+    res.json({
+      success: true,
+      availableModels,
+      bestModel,
+      testResult,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Debug models error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      stack: error.stack,
+    });
+  }
+};
+
 module.exports = {
   generateQuiz,
   createQuiz,
@@ -542,4 +858,5 @@ module.exports = {
   getMyQuizzes,
   deleteQuiz,
   attemptQuiz,
+  debugModels,
 };
