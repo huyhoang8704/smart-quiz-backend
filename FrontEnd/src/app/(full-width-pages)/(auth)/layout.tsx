@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { ToastContainer } from 'react-toastify';
 
 export default function AuthLayout({
   children,
@@ -39,6 +40,8 @@ export default function AuthLayout({
             <ThemeTogglerTwo />
           </div>
         </div>
+        <ToastContainer />
+
       </ThemeProvider>
     </div>
   );

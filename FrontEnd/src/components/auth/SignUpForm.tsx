@@ -5,10 +5,65 @@ import Label from "@/components/form/Label";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import React, { useState } from "react";
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const { push } = useRouter();
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const rs = await response.json()
+      if (rs.error) {
+        throw new Error(rs.error)
+      }
+      // Process response here
+      console.log("Registration Successful", response);
+      toast.success("Đăng ký thành công");
+      push('/signin')
+    } catch (error: any) {
+      console.error("Registration Failed:", error);
+      // toast({ title: "Registration Failed", description: error.message });
+      toast.error(`Đăng ký thất bại : ${error.message}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+
+    }
+  };
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
@@ -83,7 +138,7 @@ export default function SignUpForm() {
                 </span>
               </div>
             </div> */}
-            <form>
+            <form onSubmit={onSubmit}>
               <div className="space-y-5">
                 <div className="sm:col-span-1">
                   <Label>
@@ -91,9 +146,10 @@ export default function SignUpForm() {
                   </Label>
                   <Input
                     type="text"
-                    id="fname"
-                    name="fname"
-                    placeholder="Enter your first name"
+                    id="name"
+                    name="name"
+                    placeholder="Nhập họ và tên"
+                    value={formData.name} onChange={handleChange}
                   />
                 </div>
                 {/* <!-- Email --> */}
@@ -106,6 +162,7 @@ export default function SignUpForm() {
                     id="email"
                     name="email"
                     placeholder="Nhập email"
+                    value={formData.email} onChange={handleChange}
                   />
                 </div>
                 {/* <!-- Password --> */}
@@ -116,7 +173,9 @@ export default function SignUpForm() {
                   <div className="relative">
                     <Input
                       placeholder="Enter your password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
+                      value={formData.password} onChange={handleChange}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
