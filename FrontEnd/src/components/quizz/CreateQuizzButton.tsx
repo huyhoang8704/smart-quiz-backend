@@ -5,7 +5,7 @@ import { Modal } from "../ui/modal";
 import Label from "../form/Label";
 import Select from "../form/Select";
 import Input from "../form/input/InputField";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axiosInstance from "@/utils/axios";
 import { toast } from "react-toastify";
 import ComponentCard from "../common/ComponentCard";
@@ -54,6 +54,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
     const [focusAreas, setFocusAreas] = useState<string[]>([])
     const [selectedFile, setSelectedFile] = useState<string>()
     const [customInstructions, setCustomInstructions] = useState<string>("")
+    const [inProcess, setInProcess] = useState(false)
     const [listMarterials, setListMarterials] = useState<{
         _id: string
         ownerId: string
@@ -68,7 +69,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
 
     const quizzConfigRef = useRef(null)
 
-    const handleSave = async () => {
+    const handleSave = useCallback(async () => {
         if (!selectedFile) {
             return toast.error("Vui lòng chọn tài liệu", { position: "bottom-right" })
         }
@@ -90,10 +91,12 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
         }
 
         console.log("🚀 ~ handleSave ~ dataRequest:", dataRequest)
+        setInProcess(true)
 
         // return
         const createRs = await createQuizz(dataRequest)
         console.log("🚀 ~ handleSave ~ createRs:", createRs)
+        setInProcess(false)
         if (createRs.status === 500) {
             closeModal()
             return toast.error(createRs?.response?.data?.error || createRs.message, { position: "bottom-right" })
@@ -107,7 +110,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
 
 
 
-    };
+    }, [closeModal, customInstructions, focusAreas, props, quizzName, selectedFile])
 
     useEffect(() => {
         getListData().then(async x => {
@@ -120,7 +123,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
         />} onClick={openModal}>
             Tạo quizz mới
         </Button>
-        <Modal isOpen={isOpen} onClose={closeModal} isFullscreen>
+        <Modal isOpen={isOpen} onClose={closeModal} isFullscreen showCloseButton={!inProcess}>
             <div className="fixed top-0 left-0 flex flex-col justify-between w-full h-screen p-6 overflow-x-hidden overflow-y-auto bg-white dark:bg-gray-900 lg:p-10">
                 <div className="px-2 pr-14">
                     <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
@@ -196,10 +199,10 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                         </div>
                     </div>
                     <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                        <Button size="sm" variant="outline" onClick={closeModal}>
+                        <Button size="sm" variant="outline" onClick={closeModal} disabled={inProcess} >
                             Đóng
                         </Button>
-                        <Button size="sm" onClick={handleSave}>
+                        <Button size="sm" disabled={inProcess} onClick={handleSave}>
                             Xác nhận
                         </Button>
                     </div>
