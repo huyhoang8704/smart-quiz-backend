@@ -364,6 +364,11 @@ Không lộ đáp án trong phần câu hỏi. Trả về JSON đúng định d�
     ? `\n- Hướng dẫn thêm: ${customInstructions}`
     : "";
 
+  const customTitleText = settings.customTitle
+    ? `
+- Tiêu đề yêu cầu: "${settings.customTitle}"`
+    : "";
+
   const userPrompt = `
 Tạo quiz với:
 - Tài liệu: "${material.title}"
@@ -372,7 +377,7 @@ Tạo quiz với:
     material.processedContent || "Không có nội dung được xử lý"
   }"
 - Tổng số câu hỏi: ${totalQuestions}
-- Cấu hình chi tiết: ${questionRequirements}${focusAreasText}${customInstructionsText}
+- Cấu hình chi tiết: ${questionRequirements}${focusAreasText}${customInstructionsText}${customTitleText}
 
 Yêu cầu chi tiết:
 - Tạo chính xác số lượng câu hỏi theo từng loại đã chỉ định
@@ -385,6 +390,7 @@ Yêu cầu chi tiết:
   + Trung bình: yêu cầu hiểu biết và áp dụng
   + Khó: phân tích, tổng hợp, đánh giá cao
 - Câu hỏi phải dựa trên nội dung tài liệu
+- Nếu có "Tiêu đề yêu cầu", sử dụng chính xác tiêu đề đó, nếu không thì tự tạo tiêu đề phù hợp
 - Trả về JSON với cấu trúc: {title, settings: {totalQuestions, questionConfigs}, questions: [{question, type, options, answer, difficulty}]}
 `;
 
@@ -469,6 +475,11 @@ Yêu cầu chi tiết:
     quizData.ownerId = ownerId;
     quizData.materialId = materialId;
 
+    // Override title with customTitle if provided
+    if (settings.customTitle) {
+      quizData.title = settings.customTitle;
+    }
+
     // Update settings with correct structure
     quizData.settings = {
       totalQuestions: totalQuestions,
@@ -476,7 +487,6 @@ Yêu cầu chi tiết:
       focusAreas: focusAreas,
       customInstructions: customInstructions,
     };
-
     return quizData;
   } catch (error) {
     console.error("Error generating quiz with text:", error);
