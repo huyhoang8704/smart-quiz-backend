@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 
 import 'react-responsive-modal/styles.css';
 
@@ -9,6 +9,7 @@ import axiosInstance from "@/utils/axios";
 import Radio from "../form/input/Radio";
 import PageBreadcrumb from "../common/PageBreadCrumb";
 import QuizzReview from "./QuizzReview";
+import { DIFFICULTY_NAME, QUIZZ_TYPE_NAME } from "@/utils/enum";
 
 const getQuizzDetail = async (id: string) => {
     const rs = await axiosInstance(`/api/quizzes/${id}`, {
@@ -23,6 +24,15 @@ export default function QuizzDetail(data: { quizzId: string }) {
 
     const [quizzData, setQuizzData] = useState<{
         settings: {
+            totalQuestions: number
+            questionConfigs: Array<{
+                type: string
+                count: number
+                difficulty: string
+                _id: string
+            }>
+            focusAreas: Array<string>
+            customInstructions: string
             numQuestions: number
             difficulty: string
         }
@@ -34,6 +44,7 @@ export default function QuizzDetail(data: { quizzId: string }) {
             title: string
             type: string
             filePath: string
+            url: string
             processedContent: string
             createdAt: string
             updatedAt: string
@@ -45,12 +56,14 @@ export default function QuizzDetail(data: { quizzId: string }) {
             type: string
             options: Array<string>
             answer: string
+            difficulty: string
             _id: string
         }>
         createdAt: string
         updatedAt: string
         __v: number
     }
+
     >()
 
     useEffect(() => {
@@ -84,13 +97,24 @@ export default function QuizzDetail(data: { quizzId: string }) {
                                 </h4>
                                 <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Độ khó : {quizzData?.settings.difficulty}
-                                    </p>
-                                    <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Số lượng : {quizzData?.settings.numQuestions}
+                                        Số lượng : {quizzData?.settings.totalQuestions}
                                     </p>
                                 </div>
+                                {quizzData?.settings.questionConfigs.map((quesCo, i) => {
+                                    return <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Loại : {QUIZZ_TYPE_NAME[quesCo.type]}
+                                        </p>
+                                        <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Độ khó : {DIFFICULTY_NAME[quesCo.difficulty]}
+                                        </p>
+                                        <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Số lượng : {quesCo.count}
+                                        </p>
+                                    </div>
+                                })}
                             </div>
                         </div>
 

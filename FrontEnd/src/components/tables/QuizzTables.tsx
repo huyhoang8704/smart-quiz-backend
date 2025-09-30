@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect, useState } from "react";
+import React, { use, useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -51,7 +51,8 @@ export default function QuizzTables() {
   ]);
 
   const { push } = useRouter()
-  useEffect(() => {
+
+  const refreshData = useCallback(() => {
     getListData().then(async x => {
       // setTableData(x.map(datas => {
       //   return [datas.title, datas.settings.numQuestions, datas.settings.difficulty]
@@ -69,11 +70,15 @@ export default function QuizzTables() {
     })
   }, [])
 
+  useEffect(() => {
+    refreshData()
+  }, [refreshData])
+
   const columns: ConfigColumns[] = [
     { data: '_id', visible: false, },
     { data: 'title', title: "Tên quizz" },
-    { data: 'settings.numQuestions', title: "Số câu hỏi" },
-    { data: 'settings.difficulty', title: "Độ khó" },
+    { data: 'settings.totalQuestions', title: "Tổng số câu hỏi" },
+    // { data: 'settings.difficulty', title: "Độ khó" },
     { data: "quizzAttemptsCount", title: "Số bài quizz đã thực hiện" },
     {
       data: '_id', // No data source for this column, we'll render it manually
@@ -100,7 +105,9 @@ export default function QuizzTables() {
 
     <>
       <ComponentCard title="Chức năng">
-        <CreateQuizzButton />
+        <CreateQuizzButton onCreateSuccess={() => {
+          refreshData()
+        }} />
       </ComponentCard>
       <ComponentCard title="Danh sách">
 

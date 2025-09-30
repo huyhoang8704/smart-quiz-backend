@@ -5,9 +5,26 @@ import { Modal } from "../ui/modal";
 import Label from "../form/Label";
 import Select from "../form/Select";
 import Input from "../form/input/InputField";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axiosInstance from "@/utils/axios";
 import { toast } from "react-toastify";
+import ComponentCard from "../common/ComponentCard";
+import QuestionConfigs from "./QuestionConfigs";
+import TextArea from "../form/input/TextArea";
+import CreatableSelect from 'react-select/creatable';
+type RequestCreateQuizz = {
+    materialId: string
+    settings: {
+        questionConfigs: Array<{
+            type: "mcq" | "truefalse" | "fillblank"
+            count: number
+            difficulty: "easy" | "medium" | "hard"
+        }>
+        customTitle: string
+        focusAreas?: Array<string>
+        customInstructions?: string
+    }
+}
 
 const getListData = async () => {
     const rs = await axiosInstance(`/api/materials`, {
@@ -17,7 +34,7 @@ const getListData = async () => {
     return rs.data
 }
 
-const createQuizz = async (data: unknown) => {
+const createQuizz = async (data: RequestCreateQuizz) => {
     try {
         const rs = await axiosInstance(`/api/quizzes/generate`, {
             method: "POST",
@@ -31,12 +48,12 @@ const createQuizz = async (data: unknown) => {
     }
 }
 
-export default function CreateQuizzButton() {
+export default function CreateQuizzButton(props: { onCreateSuccess?: () => void }) {
     const { isOpen, openModal, closeModal } = useModal();
     const [quizzName, setQuizzName] = useState("")
-    const [numberOfQuestion, setNumberOfQuestion] = useState(5)
+    const [focusAreas, setFocusAreas] = useState<string[]>([])
     const [selectedFile, setSelectedFile] = useState<string>()
-    const [selectedDiff, setSelectedDiff] = useState<string>()
+    const [customInstructions, setCustomInstructions] = useState<string>("")
     const [listMarterials, setListMarterials] = useState<{
         _id: string
         ownerId: string
@@ -49,6 +66,8 @@ export default function CreateQuizzButton() {
         __v: number
     }[]>([])
 
+    const quizzConfigRef = useRef(null)
+
     const handleSave = async () => {
         if (!selectedFile) {
             return toast.error("Vui lòng chọn tài liệu", { position: "bottom-right" })
@@ -57,27 +76,33 @@ export default function CreateQuizzButton() {
             return toast.error("Vui lòng điền tên quizz", { position: "bottom-right" })
         }
 
-        if (!numberOfQuestion || numberOfQuestion < 0) {
-            return toast.error("Vui lòng điền đúng số lượng câu hỏi", { position: "bottom-right" })
-        }
-        if (!selectedDiff) {
-            return toast.error("Vui lòng chọn độ khó", { position: "bottom-right" })
-        }
-        const dataRequest = {
+        const questionConfigs: RequestCreateQuizz['settings']['questionConfigs'] = quizzConfigRef.current?.getSettingsConfig()
+
+        const dataRequest: RequestCreateQuizz = {
             "materialId": selectedFile,
-            "options": {
-                "title": quizzName,
-                "numQuestions": numberOfQuestion,
-                "difficulty": selectedDiff
-            }
+            settings: {
+                questionConfigs: questionConfigs,
+                customTitle: quizzName,
+                customInstructions: customInstructions,
+                focusAreas: focusAreas
+            },
+
         }
 
         console.log("🚀 ~ handleSave ~ dataRequest:", dataRequest)
+
+        // return
         const createRs = await createQuizz(dataRequest)
         console.log("🚀 ~ handleSave ~ createRs:", createRs)
         if (createRs.status === 500) {
             closeModal()
             return toast.error(createRs?.response?.data?.error || createRs.message, { position: "bottom-right" })
+        }
+
+        if (createRs._id !== undefined) {
+            closeModal()
+            props.onCreateSuccess?.()
+            return toast.success("Tạo quizz thành công", { position: "bottom-right" })
         }
 
 
@@ -95,8 +120,8 @@ export default function CreateQuizzButton() {
         />} onClick={openModal}>
             Tạo quizz mới
         </Button>
-        <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-            <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+        <Modal isOpen={isOpen} onClose={closeModal} isFullscreen>
+            <div className="fixed top-0 left-0 flex flex-col justify-between w-full h-screen p-6 overflow-x-hidden overflow-y-auto bg-white dark:bg-gray-900 lg:p-10">
                 <div className="px-2 pr-14">
                     <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
                         Tạo quizz mới
@@ -106,7 +131,7 @@ export default function CreateQuizzButton() {
                     </p>
                 </div>
                 <div className="flex flex-col">
-                    <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
+                    <div className="custom-scrollbar overflow-y-auto px-2 pb-3">
                         <div>
                             <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                                 Thông tin
@@ -143,33 +168,29 @@ export default function CreateQuizzButton() {
                                     </div>
                                 </div>
 
+                                <ComponentCard title="Cài đặt câu hỏi">
+                                    {/* <div>
+                                        <Label>Upload file</Label>
+                                        <FileInput onChange={handleFileChange} className="custom-class" />
+                                    </div> */}
+                                    <QuestionConfigs ref={quizzConfigRef} />
+                                </ComponentCard>
+
+
                                 <div>
-                                    <Label>Số lượng câu hỏi</Label>
-                                    <Input
-                                        type="number"
-                                        defaultValue={numberOfQuestion}
-                                        onChange={event => setNumberOfQuestion(Number(event.target.value))}
-                                    />
+                                    <Label>Tập trung vào các chủ đề</Label>
+                                    <CreatableSelect isMulti onChange={(newVal) => {
+                                        setFocusAreas(newVal.map(x => x.value))
+                                    }} />
                                 </div>
+
                                 <div>
-                                    <Label>Độ khó</Label>
-                                    <div className="relative">
-                                        <Select
-                                            options={[
-                                                { value: "easy", label: "Dễ", },
-                                                { value: "medium", label: "Trung bình", },
-                                                { value: "hard", label: "Khó", },
-                                            ]}
-                                            placeholder="Chọn độ khó"
-                                            onChange={(value: string) => {
-                                                setSelectedDiff(value)
-                                            }}
-                                            className="dark:bg-dark-900"
-                                        />
-                                        <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                                            <ChevronDownIcon />
-                                        </span>
-                                    </div>
+                                    <Label>Mô tả chi tiết thêm</Label>
+                                    <TextArea
+                                        value={customInstructions}
+                                        onChange={(value) => setCustomInstructions(value)}
+                                        rows={6}
+                                    />
                                 </div>
                             </div>
                         </div>
