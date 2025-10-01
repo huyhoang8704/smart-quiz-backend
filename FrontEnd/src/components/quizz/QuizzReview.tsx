@@ -1,3 +1,4 @@
+'use client';
 import ComponentCard from "../common/ComponentCard"
 import Radio from "../form/input/Radio"
 

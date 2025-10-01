@@ -1,51 +1,40 @@
 "use client";
 
-import React, { use, useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
-import Badge from "../ui/badge/Badge";
-import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import dynamic from 'next/dynamic';
+import 'datatables.net-dt/css/dataTables.dataTables.css';
+// const DataTable = dynamic(() => import('datatables.net-react'), { ssr: false });
+const DataTable = dynamic(
+  async () => {
+    import(`datatables.net-buttons-dt`);
+    const dtReact = import('datatables.net-react');
+    const dtNet = import(`datatables.net-dt`);
 
-import jszip from 'jszip';
-import pdfmake from 'pdfmake';
-import DataTable from 'datatables.net-react';
-import DataTablesCore, { ConfigColumns } from 'datatables.net-dt';
-import 'datatables.net-buttons-dt';
-import 'datatables.net-buttons/js/buttons.colVis.mjs';
-import 'datatables.net-buttons/js/buttons.html5.mjs';
-import 'datatables.net-buttons/js/buttons.print.mjs';
-import 'datatables.net-colreorder-dt';
-import 'datatables.net-columncontrol-dt';
-import DateTime from 'datatables.net-datetime';
-import 'datatables.net-searchbuilder-dt';
-import 'datatables.net-select-dt';
-import { useSession } from "next-auth/react";
+    // import(`datatables.net-buttons/js/buttons.colVis.mjs`);
+    // import(`datatables.net-buttons-dt`);
+    // import(`datatables.net-buttons-dt`);
+    // import(`datatables.net-buttons-dt`);
+
+    const [reactMod, dtNetMod] = await Promise.all([dtReact, dtNet]);
+
+    reactMod.default.use(dtNetMod.default);
+    return reactMod.default;
+  },
+  { ssr: false }
+);
 import axiosInstance from "@/utils/axios";
 import Button from "../ui/button/Button";
-import { BoxIcon } from "@/icons";
+
 import ComponentCard from "../common/ComponentCard";
 import { hydrateRoot } from "react-dom/client";
-import QuizzView from "./QuizzView";
 import { useRouter } from "next/navigation";
 import UploadMaterial from "../materials/UploadMaterial";
 import { toast } from "react-toastify";
 
-DataTablesCore.Buttons.jszip(jszip);
-DataTablesCore.Buttons.pdfMake(pdfmake);
-DataTable.use(DataTablesCore);
+// DataTablesCore.Buttons.jszip(jszip);
+// DataTablesCore.Buttons.pdfMake(pdfmake);
+// DataTable.use(DataTablesCore);
 
-const getListData = async () => {
-  const rs = await axiosInstance(`/api/materials`, {
-    method: "GET",
-  })
-  console.log(rs.data)
-  return rs.data
-}
 
 
 export default function MaterialsTable() {
@@ -63,6 +52,15 @@ export default function MaterialsTable() {
   ]);
 
   const { push } = useRouter()
+
+  const getListData = async () => {
+    const rs = await axiosInstance(`/api/materials`, {
+      method: "GET",
+    })
+    console.log(rs.data)
+    return rs.data
+  }
+
   useEffect(() => {
     getListData().then(async x => {
       setTableData(x)

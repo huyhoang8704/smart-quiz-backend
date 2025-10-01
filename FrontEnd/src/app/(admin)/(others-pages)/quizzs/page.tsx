@@ -1,10 +1,9 @@
-import ComponentCard from "@/components/common/ComponentCard";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import BasicTableOne from "@/components/tables/BasicTableOne";
-import QuizzTables from "@/components/tables/QuizzTables";
-import QuizzTables2 from "@/components/tables/QuizzTables2";
 import { Metadata } from "next";
 import React from "react";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import QuizzTables from "@/components/tables/QuizzTables";
+
+
 
 export const metadata: Metadata = {
   title: "Danh sách các bài kiểm tra | Quản lý dự án phần mềm - Tạo Quizz",
@@ -12,7 +11,7 @@ export const metadata: Metadata = {
     "This is Next.js Basic Table  page for TailAdmin  Tailwind CSS Admin Dashboard Template",
   // other metadata
 };
-console.log(process.env)
+
 export default function BasicTables() {
   return (
     <div>

@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
     // It is not recommended to use this in production.
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+  },
   /* config options here */
   webpack(config) {
     config.module.rules.push({

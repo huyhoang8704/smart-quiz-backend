@@ -1,9 +1,7 @@
-
-
+import React from "react";
+import { Metadata } from "next";
 import QuizzDetail from "@/components/quizz/QuizzDetail";
 
-import { Metadata } from "next";
-import React from "react";
 
 export const metadata: Metadata = {
     title: "Chi tiết quizz | Quản lý dự án phần mềm - Tạo Quizz",
@@ -11,7 +9,9 @@ export const metadata: Metadata = {
         "This is Next.js Basic Table  page for TailAdmin  Tailwind CSS Admin Dashboard Template",
     // other metadata
 };
-export default function BasicTables({ params }: { params: { id: string } }) {
-
-    return <QuizzDetail quizzId={params.id} />
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function BasicTables({ params }: any) {
+    return <div>
+        <QuizzDetail quizzId={params.id} />
+    </div>
 }

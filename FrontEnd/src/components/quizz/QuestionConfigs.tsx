@@ -53,7 +53,7 @@ const QuestionConfigs = forwardRef<{
                         "count": configFillBlank.count,
                         "difficulty": configFillBlank.difficulty
                     }
-                ]
+                ] as any
             }
         }),
         [configMcq, configTrueFalse, configFillBlank]

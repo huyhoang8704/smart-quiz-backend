@@ -67,7 +67,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
         __v: number
     }[]>([])
 
-    const quizzConfigRef = useRef(null)
+    const quizzConfigRef = useRef<any>(null)
 
     const handleSave = useCallback(async () => {
         if (!selectedFile) {
@@ -183,7 +183,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                 <div>
                                     <Label>Tập trung vào các chủ đề</Label>
                                     <CreatableSelect isMulti onChange={(newVal) => {
-                                        setFocusAreas(newVal.map(x => x.value))
+                                        setFocusAreas(newVal.map((x: any) => x.value))
                                     }} />
                                 </div>
 

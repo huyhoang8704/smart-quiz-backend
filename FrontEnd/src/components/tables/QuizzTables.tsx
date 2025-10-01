@@ -1,52 +1,70 @@
 "use client";
+import React, { useCallback, useEffect, useState } from "react";
+import dynamic from 'next/dynamic';
+import 'datatables.net-dt/css/dataTables.dataTables.css';
+// const DataTable = dynamic(() => import('datatables.net-react'), { ssr: false });
+const DataTable = dynamic(
+  async () => {
+    import(`datatables.net-buttons-dt`);
+    const dtReact = import('datatables.net-react');
+    const dtNet = import(`datatables.net-dt`);
 
-import React, { use, useCallback, useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
-import Badge from "../ui/badge/Badge";
-import Image from "next/image";
+    // import(`datatables.net-buttons/js/buttons.colVis.mjs`);
+    // import(`datatables.net-buttons-dt`);
+    // import(`datatables.net-buttons-dt`);
+    // import(`datatables.net-buttons-dt`);
 
-import jszip from 'jszip';
-import pdfmake from 'pdfmake';
-import DataTable from 'datatables.net-react';
-import DataTablesCore, { ConfigColumns } from 'datatables.net-dt';
-import 'datatables.net-buttons-dt';
-import 'datatables.net-buttons/js/buttons.colVis.mjs';
-import 'datatables.net-buttons/js/buttons.html5.mjs';
-import 'datatables.net-buttons/js/buttons.print.mjs';
-import 'datatables.net-colreorder-dt';
-import 'datatables.net-columncontrol-dt';
-import DateTime from 'datatables.net-datetime';
-import 'datatables.net-searchbuilder-dt';
-import 'datatables.net-select-dt';
-import { useSession } from "next-auth/react";
+    const [reactMod, dtNetMod] = await Promise.all([dtReact, dtNet]);
+
+    reactMod.default.use(dtNetMod.default);
+    return reactMod.default;
+  },
+  { ssr: false }
+);
+// import DataTable from 'datatables.net-react';
+// import DataTablesCore, { ConfigColumns } from 'datatables.net-dt';
+// dynamic(() => import('datatables.net-buttons-dt'), { ssr: false })
+// import jszip from 'jszip';
+// import pdfmake from 'pdfmake';
+// import 'datatables.net-buttons-dt';
+// import 'datatables.net-buttons/js/buttons.colVis.mjs';
+// import 'datatables.net-buttons/js/buttons.html5.mjs';
+// import 'datatables.net-buttons/js/buttons.print.mjs';
+// import 'datatables.net-colreorder-dt';
+// import 'datatables.net-columncontrol-dt';
+
+// import 'datatables.net-searchbuilder-dt';
+// import 'datatables.net-select-dt';
+
 import axiosInstance from "@/utils/axios";
 import Button from "../ui/button/Button";
-import { BoxIcon } from "@/icons";
+
 import ComponentCard from "../common/ComponentCard";
 import { hydrateRoot } from "react-dom/client";
-import QuizzView from "./QuizzView";
+
 import { useRouter } from "next/navigation";
 import CreateQuizzButton from "../quizz/CreateQuizzButton";
 
-DataTablesCore.Buttons.jszip(jszip);
-DataTablesCore.Buttons.pdfMake(pdfmake);
-DataTable.use(DataTablesCore);
+// DataTablesCore.Buttons.jszip(jszip);
+// DataTablesCore.Buttons.pdfMake(pdfmake);
+// if (typeof window !== 'undefined') {
 
-const getListData = async () => {
-  const rs = await axiosInstance(`/api/quizzes`, {
-    method: "GET",
-  })
-  console.log(rs.data)
-  return rs.data
-}
+//   // eslint-disable-next-line react-hooks/rules-of-hooks
+//   DataTable.use(DataTablesCore);
+// }
+
+
 
 export default function QuizzTables() {
+
+  const getListData = useCallback(async () => {
+    const rs = await axiosInstance(`/api/quizzes`, {
+      method: "GET",
+    })
+    console.log(rs.data)
+    return rs.data
+  }, [])
+
   const [tableData, setTableData] = useState([
   ]);
 
@@ -117,16 +135,7 @@ export default function QuizzTables() {
 
           <div className="max-w-full overflow-x-auto">
             <div className="min-w-[1102px] p-8">
-              <DataTable data={tableData} className="overflow-hidden  rounded-xl  bg-white  dark:bg-white/[0.03]" columns={columns}>
-                {/* <thead>
-              <tr>
-                <th>Tên quizz</th>
-                <th>Số câu hỏi</th>
-                <th>Độ khó</th>
-                <th>Số bài quizz đã thực hiện</th>
-              </tr>
-            </thead> */}
-              </DataTable>
+              <DataTable data={tableData} className="overflow-hidden  rounded-xl  bg-white  dark:bg-white/[0.03]" columns={columns} />
             </div>
           </div>
         </div>

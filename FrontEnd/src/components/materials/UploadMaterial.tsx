@@ -16,8 +16,9 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
     const [fileName, setFileName] = useState("")
     const [desc, setDesc] = useState("")
 
-    const handleFileChange = (event) => {
-        setSelectedFile(event.target.files[0]); // For single file upload
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files?.[0])
+            setSelectedFile(event.target.files?.[0] as any); // For single file upload
     };
     const handleSave = async () => {
         // Handle save logic here

@@ -1,26 +1,24 @@
 'use client';
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import 'react-responsive-modal/styles.css';
 
 import ComponentCard from "../common/ComponentCard";
-import Image from "next/image";
+
 import axiosInstance from "@/utils/axios";
-import Radio from "../form/input/Radio";
-import PageBreadcrumb from "../common/PageBreadCrumb";
 import QuizzReview from "./QuizzReview";
 import { DIFFICULTY_NAME, QUIZZ_TYPE_NAME } from "@/utils/enum";
 
-const getQuizzDetail = async (id: string) => {
-    const rs = await axiosInstance(`/api/quizzes/${id}`, {
-        method: "GET",
-    })
-    console.log(rs.data)
-    return rs.data
-}
+
 
 export default function QuizzDetail(data: { quizzId: string }) {
-    console.log("🚀 ~ QuizzDetail ~ data:", data)
+    const getQuizzDetail = useCallback(async (id: string) => {
+        const rs = await axiosInstance(`/api/quizzes/${id}`, {
+            method: "GET",
+        })
+        console.log(rs.data)
+        return rs.data
+    }, [])
 
     const [quizzData, setQuizzData] = useState<{
         settings: {
@@ -103,11 +101,11 @@ export default function QuizzDetail(data: { quizzId: string }) {
                                 {quizzData?.settings.questionConfigs.map((quesCo, i) => {
                                     return <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            Loại : {QUIZZ_TYPE_NAME[quesCo.type]}
+                                            Loại : {QUIZZ_TYPE_NAME[quesCo.type as any]}
                                         </p>
                                         <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            Độ khó : {DIFFICULTY_NAME[quesCo.difficulty]}
+                                            Độ khó : {DIFFICULTY_NAME[quesCo.difficulty as any]}
                                         </p>
                                         <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
