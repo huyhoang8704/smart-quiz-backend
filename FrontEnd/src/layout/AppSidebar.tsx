@@ -90,11 +90,11 @@ const navItemsTeacher: NavItem[] = [
     name: "Quản lý tài liệu",
     path: "/materials",
   },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Tạo bài quizz",
-    path: "/quizzcreate",
-  },
+  // {
+  //   icon: <BoxCubeIcon />,
+  //   name: "Tạo bài quizz",
+  //   path: "/quizzcreate",
+  // },
 
 ];
 const navItemsStudent: NavItem[] = [
@@ -418,8 +418,7 @@ const AppSidebar: React.FC = () => {
               {isStudent && renderMenuItems(navItemsStudent, "main")}
               {!isProduction && renderMenuItems(navItems, "main")}
             </div>
-
-            <div className="">
+            {!isProduction && <div className="">
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
                   ? "lg:justify-center"
@@ -433,7 +432,9 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(othersItems, "others")}
-            </div>
+            </div>}
+
+
           </div>
         </nav>
         {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
