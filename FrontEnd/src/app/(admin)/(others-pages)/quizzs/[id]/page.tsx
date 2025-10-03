@@ -10,8 +10,9 @@ export const metadata: Metadata = {
     // other metadata
 };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function BasicTables({ params }: any) {
+export default async function BasicTables({ params }: any) {
+    const { id } = await params
     return <div>
-        <QuizzDetail quizzId={params.id} />
+        <QuizzDetail quizzId={id} />
     </div>
 }

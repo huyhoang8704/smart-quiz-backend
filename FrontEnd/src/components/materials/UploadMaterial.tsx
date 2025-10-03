@@ -9,6 +9,7 @@ import { useState } from "react";
 import axiosInstance from "@/utils/axios";
 import { toast } from "react-toastify";
 import FileInput from "../form/input/FileInput";
+import Swal from "sweetalert2";
 
 export default function UploadMaterial(props: { onSuccess?: () => void }) {
     const { isOpen, openModal, closeModal } = useModal();
@@ -32,12 +33,25 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
         formData.append('file', selectedFile);
         formData.append('title', fileName);
         formData.append('processedContent', desc);
-
+        Swal.fire({
+            title: "Đang xử lý",
+            html: "Vui lòng đợi trong giây lát!",
+            icon: "info",
+            showConfirmButton: false,
+            showDenyButton: false,
+            showCancelButton: false,
+            allowOutsideClick: false,
+            timerProgressBar: true,
+            allowEscapeKey: false
+        })
         const rs = await axiosInstance(`/api/materials/upload`, {
             method: "POST",
             data: formData
-        })
+        }).catch(() => {
+            Swal.close()
 
+        })
+        Swal.close()
         if (rs.data) {
             toast.success("Tải lên tài liệu thành công!", {
                 position: "bottom-right",

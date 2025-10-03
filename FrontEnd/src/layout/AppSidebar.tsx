@@ -97,6 +97,39 @@ const navItemsTeacher: NavItem[] = [
   // },
 
 ];
+
+
+const navItemsAdmin: NavItem[] = [
+  {
+    icon: <GridIcon />,
+    name: "Quản lý",
+    path: "/",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Quản lý người dùng",
+    path: "/manager-user",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Danh sách bài quizz",
+    path: "/quizzs",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Danh sách bài kiểm tra",
+    path: "/quizzresult",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Quản lý tài liệu",
+    path: "/materials",
+  },
+
+
+];
+
+
 const navItemsStudent: NavItem[] = [
   // {
   //   icon: <GridIcon />,
@@ -158,6 +191,7 @@ const AppSidebar: React.FC = () => {
   const { data } = useSession()
   const isTeacher = data?.user?.role === 'teacher'
   const isStudent = data?.user?.role === 'student'
+  const isAdmin = data?.user?.role === 'admin'
 
   const [isProduction, setIsProduction] = useState(false);
 
@@ -416,6 +450,9 @@ const AppSidebar: React.FC = () => {
               </h2>
               {isTeacher && renderMenuItems(navItemsTeacher, "main")}
               {isStudent && renderMenuItems(navItemsStudent, "main")}
+              {isAdmin && renderMenuItems(navItemsAdmin, "main")}
+
+
               {!isProduction && renderMenuItems(navItems, "main")}
             </div>
             {!isProduction && <div className="">

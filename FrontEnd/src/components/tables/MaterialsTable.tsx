@@ -3,7 +3,10 @@
 import React, { useEffect, useState } from "react";
 import dynamic from 'next/dynamic';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
-// const DataTable = dynamic(() => import('datatables.net-react'), { ssr: false });
+
+// const Swal = dynamic(() => import('sweetalert2'), { ssr: false });
+// const withReactContent = dynamic(() => import('sweetalert2-react-content'), { ssr: false });
+
 const DataTable = dynamic(
   async () => {
     import(`datatables.net-buttons-dt`);
@@ -30,10 +33,9 @@ import { hydrateRoot } from "react-dom/client";
 import { useRouter } from "next/navigation";
 import UploadMaterial from "../materials/UploadMaterial";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import axios from "axios";
 
-// DataTablesCore.Buttons.jszip(jszip);
-// DataTablesCore.Buttons.pdfMake(pdfmake);
-// DataTable.use(DataTablesCore);
 
 
 
@@ -68,11 +70,23 @@ export default function MaterialsTable() {
   }, [])
 
   const deleteFile = async (id: string) => {
+    Swal.fire({
+      title: "Đang xử lý",
+      html: "Vui lòng đợi trong giây lát!",
+      icon: "info",
+      showConfirmButton: false,
+      showDenyButton: false,
+      showCancelButton: false,
+      allowOutsideClick: false,
+      timerProgressBar: true,
+      allowEscapeKey: false
+    })
     const rs = await axiosInstance(`/api/materials/${id}`, {
       method: "DELETE",
     })
 
     console.log("🚀 ~ deleteFile ~ rs.data:", rs.data)
+    Swal.close()
     if (rs?.data?.message === "Material deleted successfully") {
       toast.success("Xoá file thành công!", {
         position: "bottom-right",
@@ -87,6 +101,64 @@ export default function MaterialsTable() {
     }
     return rs.data
   }
+
+
+
+  const downloadFile = async (id: string) => {
+    Swal.fire({
+      title: "Đang xử lý",
+      html: "Vui lòng đợi trong giây lát!",
+      icon: "info",
+      showConfirmButton: false,
+      showDenyButton: false,
+      showCancelButton: false,
+      allowOutsideClick: false,
+      timerProgressBar: true,
+      allowEscapeKey: false
+    })
+    const rs = await axiosInstance(`/api/materials/${id}`, {
+      method: "GET",
+    }).catch(() => {
+      Swal.close()
+    })
+    try {
+
+
+      if (rs?.data?.url) {
+        const downloadData = await axios({
+          url: rs?.data?.url,
+          method: "GET",
+          responseType: "blob" // important
+        })
+
+        const url = window.URL.createObjectURL(new Blob([downloadData.data]));
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute(
+          'download',
+          (rs.data.filePath.split('/') as string[]).pop(),
+        );
+
+        // Append to html link element page
+        document.body.appendChild(link);
+
+        // Start download
+        link.click();
+
+        // Clean up and remove the link
+        link.parentNode.removeChild(link);
+      }
+      Swal.close()
+
+    } catch (error) {
+      console.log("🚀 ~ downloadFile ~ error:", error)
+      Swal.close()
+
+    }
+
+  }
+
 
 
   const columns: ConfigColumns[] = [
@@ -113,6 +185,12 @@ export default function MaterialsTable() {
               deleteFile(data)
             }}>
               Xoá
+            </Button>
+
+            <Button size="sm" variant="primary" className="hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={() => {
+              downloadFile(data)
+            }}>
+              Tải
             </Button>
           </div>
         );

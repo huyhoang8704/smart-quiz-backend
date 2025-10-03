@@ -1,3 +1,4 @@
+"use client"
 import { BoxIcon, ChevronDownIcon } from "@/icons";
 import Button from "../ui/button/Button";
 import { useModal } from "@/hooks/useModal";
@@ -12,6 +13,8 @@ import ComponentCard from "../common/ComponentCard";
 import QuestionConfigs from "./QuestionConfigs";
 import TextArea from "../form/input/TextArea";
 import CreatableSelect from 'react-select/creatable';
+import Swal from 'sweetalert2';
+
 type RequestCreateQuizz = {
     materialId: string
     settings: {
@@ -92,11 +95,22 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
 
         console.log("🚀 ~ handleSave ~ dataRequest:", dataRequest)
         setInProcess(true)
-
-        // return
+        Swal.fire({
+            title: "Đang tạo tài liệu",
+            html: "Vui lòng đợi trong giây lát!",
+            icon: "info",
+            showConfirmButton: false,
+            showDenyButton: false,
+            showCancelButton: false,
+            allowOutsideClick: false,
+            timerProgressBar: true,
+            allowEscapeKey: false
+        })
         const createRs = await createQuizz(dataRequest)
         console.log("🚀 ~ handleSave ~ createRs:", createRs)
         setInProcess(false)
+
+        Swal.close()
         if (createRs.status === 500) {
             closeModal()
             return toast.error(createRs?.response?.data?.error || createRs.message, { position: "bottom-right" })
