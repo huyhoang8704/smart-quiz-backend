@@ -7,10 +7,6 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
-RUN npm set strict-ssl false
-# Copy the rest of the application code
 COPY . .
 
 # Expose the port your Express app listens on
