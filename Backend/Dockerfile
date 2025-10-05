@@ -14,7 +14,7 @@ RUN npm set strict-ssl false
 COPY . .
 
 # Expose the port your Express app listens on
-EXPOSE 4000
+EXPOSE 3000
 
 # Command to run the application in development mode with nodemon
 CMD ["npm", "run", "dev"]
