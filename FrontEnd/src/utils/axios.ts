@@ -2,7 +2,7 @@ import axios from 'axios';
 
 
 const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL, // Your API base URL
+    baseURL: "https://quanlyduanapi.duytung-developer.io.vn", // Your API base URL
 });
 
 axiosInstance.interceptors.request.use(
