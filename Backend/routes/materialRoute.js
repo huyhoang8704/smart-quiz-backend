@@ -121,10 +121,22 @@ router.post("/upload", auth, materialController.uploadMaterial);
  * @swagger
  * /api/materials:
  *   get:
- *     summary: Get all materials owned by the current user
+ *     summary: Get all materials owned by the current user (with filter & search)
  *     tags: [Materials]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [text, pdf, video, slide]
+ *         description: Filter materials by type
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search materials by title or processedContent
  *     responses:
  *       200:
  *         description: List of materials
@@ -136,6 +148,7 @@ router.post("/upload", auth, materialController.uploadMaterial);
  *                 $ref: '#/components/schemas/Material'
  */
 router.get("/", auth, materialController.getMyMaterials);
+
 
 /**
  * @swagger
