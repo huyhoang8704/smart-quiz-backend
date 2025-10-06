@@ -10,6 +10,3 @@ module.exports.connect = async () => {
         console.log("Mongodb Connect Failed")
     }
 }
-
-// aye10diemtoan0_db_user SEDY4ok2S2AndYoZ
-// mongodb+srv://aye10diemtoan0_db_user:SEDY4ok2S2AndYoZ@cluster0.evtjoau.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
