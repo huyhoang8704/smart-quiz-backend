@@ -137,6 +137,18 @@ router.post("/upload", auth, materialController.uploadMaterial);
  *         schema:
  *           type: string
  *         description: Search materials by title or processedContent
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
  *     responses:
  *       200:
  *         description: List of materials

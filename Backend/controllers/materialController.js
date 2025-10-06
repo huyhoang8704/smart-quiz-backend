@@ -3,7 +3,7 @@ const supabase = require("../utils/supabaseClient");
 const multer = require("multer");
 const path = require("path");
 const sanitizeFileName = require("../utils/sanitizeFileName");
-
+const getPagination = require("../utils/paginate");
 
 
 
@@ -90,6 +90,7 @@ const uploadMaterial = async (req, res) => {
 const getMyMaterials = async (req, res) => {
   try {
     const { type, search } = req.query;
+    const { page, limit, skip } = getPagination(req);
     let query = { ownerId: req.user._id };
 
     if (type) query.type = type;
@@ -102,9 +103,23 @@ const getMyMaterials = async (req, res) => {
       ];
     }
 
-    const materials = await Material.find(query).sort({ createdAt: -1 });
+    const [materials, total] = await Promise.all([
+      Material.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Material.countDocuments(query),
+    ]);
 
-    res.json(materials);
+    res.json({
+      data: materials,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
