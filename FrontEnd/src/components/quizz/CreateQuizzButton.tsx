@@ -14,20 +14,9 @@ import QuestionConfigs from "./QuestionConfigs";
 import TextArea from "../form/input/TextArea";
 import CreatableSelect from 'react-select/creatable';
 import Swal from 'sweetalert2';
+import QuizzReview from "./QuizzReview";
+import { QuizzDataType, RequestCreateQuizz } from "@/utils/types";
 
-type RequestCreateQuizz = {
-    materialId: string
-    settings: {
-        questionConfigs: Array<{
-            type: "mcq" | "truefalse" | "fillblank"
-            count: number
-            difficulty: "easy" | "medium" | "hard"
-        }>
-        customTitle: string
-        focusAreas?: Array<string>
-        customInstructions?: string
-    }
-}
 
 const getListData = async () => {
     const rs = await axiosInstance(`/api/materials`, {
@@ -51,8 +40,28 @@ const createQuizz = async (data: RequestCreateQuizz) => {
     }
 }
 
+const deleteQuizz = async (id: string) => {
+    try {
+        const rs = await axiosInstance(`/api/quizzes/${id}`, {
+            method: "DELETE",
+        })
+
+        return rs.data
+    } catch (error) {
+        return error
+
+    }
+}
+
+
 export default function CreateQuizzButton(props: { onCreateSuccess?: () => void }) {
     const { isOpen, openModal, closeModal } = useModal();
+    const { isOpen: isOpenPreview, openModal: openModalPreview, closeModal: closeModalPrivew } = useModal();
+
+
+    const [quizzDataCreate, setQuizzDataCreate] = useState<QuizzDataType>()
+
+
     const [quizzName, setQuizzName] = useState("")
     const [focusAreas, setFocusAreas] = useState<string[]>([])
     const [selectedFile, setSelectedFile] = useState<string>()
@@ -107,8 +116,10 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
             allowEscapeKey: false
         })
         const createRs = await createQuizz(dataRequest)
-        console.log("🚀 ~ handleSave ~ createRs:", createRs)
+        console.log("🚀 ~ handleSave ~ createRs:", createRs, JSON.stringify(createRs))
+
         setInProcess(false)
+
 
         Swal.close()
         if (createRs.status === 500) {
@@ -117,14 +128,15 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
         }
 
         if (createRs._id !== undefined) {
-            closeModal()
-            props.onCreateSuccess?.()
-            return toast.success("Tạo quizz thành công", { position: "bottom-right" })
+            setQuizzDataCreate(createRs)
+            openModalPreview()
+            // props.onCreateSuccess?.()
+            // return toast.success("Tạo quizz thành công", { position: "bottom-right" })
         }
 
 
 
-    }, [closeModal, customInstructions, focusAreas, props, quizzName, selectedFile])
+    }, [closeModal, customInstructions, focusAreas, props, quizzName, selectedFile, openModalPreview])
 
     useEffect(() => {
         getListData().then(async x => {
@@ -220,6 +232,39 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                             Xác nhận
                         </Button>
                     </div>
+                </div>
+            </div>
+        </Modal>
+
+
+        <Modal isOpen={isOpenPreview} onClose={closeModalPrivew} isFullscreen >
+            <div className="fixed top-0 left-0 flex flex-col justify-between w-full h-screen p-6 overflow-x-hidden overflow-y-auto bg-white dark:bg-gray-900 lg:p-10 space-y-6">
+                <div className="px-2 pr-14">
+                    <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                        Xem lại quizz
+                    </h4>
+                    <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+                        Xác nhận quizz
+                    </p>
+                </div>
+                {quizzDataCreate && <QuizzReview quizzData={quizzDataCreate} />}
+
+                <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+                    <Button size="sm" variant="outline" onClick={() => {
+                        closeModalPrivew()
+                        if (quizzDataCreate?._id) {
+                            deleteQuizz(quizzDataCreate._id)
+                        }
+                    }} disabled={inProcess} >
+                        Tạo lại
+                    </Button>
+                    <Button size="sm" disabled={inProcess} onClick={() => {
+                        props.onCreateSuccess?.()
+                        closeModal()
+                        closeModalPrivew()
+                    }}>
+                        Xác nhận
+                    </Button>
                 </div>
             </div>
         </Modal>

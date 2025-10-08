@@ -1,38 +1,10 @@
 'use client';
+import { QuizzDataType } from "@/utils/types";
 import ComponentCard from "../common/ComponentCard"
 import Radio from "../form/input/Radio"
 
 export default function QuizzReview(props: {
-    quizzData: {
-        settings: {
-            numQuestions: number
-            difficulty: string
-        }
-        _id: string
-        ownerId: string
-        materialId: {
-            _id: string
-            ownerId: string
-            title: string
-            type: string
-            filePath: string
-            processedContent: string
-            createdAt: string
-            updatedAt: string
-            __v: number
-        }
-        title: string
-        questions: Array<{
-            question: string
-            type: string
-            options: Array<string>
-            answer: string
-            _id: string
-        }>
-        createdAt: string
-        updatedAt: string
-        __v: number
-    }
+    quizzData: QuizzDataType
 }) {
     const { quizzData } = props
     if (!quizzData) return null
