@@ -16,4 +16,4 @@ function getPagination(req) {
   return { page, limit, skip };
 }
 
-module.exports = { getPagination };
+module.exports = getPagination;
