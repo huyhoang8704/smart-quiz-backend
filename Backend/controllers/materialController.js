@@ -86,6 +86,32 @@ const uploadMaterial = async (req, res) => {
   }
 };
 
+
+// Lấy danh sách học liệu của user
+const getMyMaterials2 = async (req, res) => {
+  try {
+    const { type, search } = req.query;
+    let query = { ownerId: req.user._id };
+
+    if (type) query.type = type;
+  
+    // Search theo title hoặc processedContent
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { processedContent: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    const materials = await Material.find(query).sort({ createdAt: -1 });
+
+    res.json(materials);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 // Lấy danh sách học liệu của user
 const getMyMaterials = async (req, res) => {
   try {
@@ -124,7 +150,6 @@ const getMyMaterials = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // Lấy chi tiết học liệu
 const getMaterialById = async (req, res) => {
