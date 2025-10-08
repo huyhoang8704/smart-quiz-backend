@@ -44,6 +44,8 @@ import { hydrateRoot } from "react-dom/client";
 
 import { useRouter } from "next/navigation";
 import CreateQuizzButton from "../quizz/CreateQuizzButton";
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 
 // DataTablesCore.Buttons.jszip(jszip);
 // DataTablesCore.Buttons.pdfMake(pdfmake);
@@ -88,6 +90,21 @@ export default function QuizzTables() {
     })
   }, [])
 
+
+  const deleteQuizz = useCallback(async (id: string) => {
+    try {
+      const rs = await axiosInstance(`/api/quizzes/${id}`, {
+        method: "DELETE",
+      })
+
+      return rs.data
+    } catch (error) {
+      return error
+
+    }
+  }, [])
+
+
   useEffect(() => {
     refreshData()
   }, [refreshData])
@@ -107,11 +124,43 @@ export default function QuizzTables() {
       createdCell: function (cell, data, row) {
         hydrateRoot(
           cell,
-          <Button size="sm" variant="primary" onClick={() => {
-            push(`/quizzs/${data}`)
-          }}>
-            Xem
-          </Button>
+          <div className="flex items-center gap-5">
+            <Button size="sm" variant="primary" onClick={() => {
+              push(`/quizzs/${data}`)
+            }}>
+              Xem
+            </Button>
+
+            <Button size="sm" variant="primary" className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={async () => {
+              Swal.fire({
+                title: "Đang xử lý",
+                html: "Vui lòng đợi trong giây lát!",
+                icon: "info",
+                showConfirmButton: false,
+                showDenyButton: false,
+                showCancelButton: false,
+                allowOutsideClick: false,
+                timerProgressBar: true,
+                allowEscapeKey: false
+              })
+              const rs = await deleteQuizz(data)
+
+
+              Swal.close()
+              if (rs?.message === "Quiz deleted successfully") {
+                toast.success("Xoá quizz thành công!", {
+                  position: "bottom-right",
+                })
+                refreshData()
+              } else {
+                toast.error("Xoá quizz thất bại!", {
+                  position: "bottom-right",
+                })
+              }
+            }}>
+              Xoá
+            </Button>
+          </div>
         );
       },
       orderable: false, // Prevent sorting on this column
