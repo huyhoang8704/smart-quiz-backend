@@ -167,7 +167,7 @@ export default function SignInForm() {
                 </div> */}
                 <div>
                   <Button className="w-full" size="sm">
-                    Sign in
+                    Đăng nhập
                   </Button>
                 </div>
               </div>

@@ -22,7 +22,7 @@ const DataTable = dynamic(
   { ssr: false }
 );
 // import DataTable from 'datatables.net-react';
-// import DataTablesCore, { ConfigColumns } from 'datatables.net-dt';
+import { ConfigColumns } from 'datatables.net-dt';
 // dynamic(() => import('datatables.net-buttons-dt'), { ssr: false })
 // import jszip from 'jszip';
 // import pdfmake from 'pdfmake';
@@ -70,9 +70,12 @@ export default function QuizzTables() {
   const [tableData, setTableData] = useState([
   ]);
 
+  const [loading, setLoading] = useState(false);
+
   const { push } = useRouter()
 
   const refreshData = useCallback(() => {
+    setLoading(true)
     getListData().then(async x => {
       // setTableData(x.map(datas => {
       //   return [datas.title, datas.settings.numQuestions, datas.settings.difficulty]
@@ -87,8 +90,9 @@ export default function QuizzTables() {
         x[i].quizzAttemptsCount = rrr.data.length
       }
       setTableData(x)
+      setLoading(false)
     })
-  }, [])
+  }, [getListData])
 
 
   const deleteQuizz = useCallback(async (id: string) => {
@@ -109,12 +113,30 @@ export default function QuizzTables() {
     refreshData()
   }, [refreshData])
 
+  useEffect(() => {
+    if (loading) {
+      Swal.fire({
+        title: "Đang tải dữ liệu",
+        html: "Vui lòng đợi trong giây lát!",
+        icon: "info",
+        showConfirmButton: false,
+        showDenyButton: false,
+        showCancelButton: false,
+        allowOutsideClick: false,
+        timerProgressBar: true,
+        allowEscapeKey: false
+      })
+    } else {
+      Swal.close()
+    }
+  }, [loading])
+
   const columns: ConfigColumns[] = [
     { data: '_id', visible: false, },
-    { data: 'title', title: "Tên quizz" },
-    { data: 'settings.totalQuestions', title: "Tổng số câu hỏi" },
+    { data: 'title', title: "Tên quizz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
+    { data: 'settings.totalQuestions', title: "Tổng số câu hỏi", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     // { data: 'settings.difficulty', title: "Độ khó" },
-    { data: "quizzAttemptsCount", title: "Số bài quizz đã thực hiện" },
+    { data: "quizzAttemptsCount", title: "Số bài quizz đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     {
       data: '_id', // No data source for this column, we'll render it manually
       // defaultContent: <Button size="sm" variant="primary" endIcon={<BoxIcon />}>
@@ -163,6 +185,7 @@ export default function QuizzTables() {
           </div>
         );
       },
+      className: "text-lg font-semibold text-gray-800 dark:text-white/90",
       orderable: false, // Prevent sorting on this column
       searchable: false // Prevent searching on this column
     }
@@ -184,7 +207,11 @@ export default function QuizzTables() {
 
           <div className="max-w-full overflow-x-auto">
             <div className="min-w-[1102px] p-8">
-              <DataTable data={tableData} className="overflow-hidden  rounded-xl  bg-white  dark:bg-white/[0.03]" columns={columns} />
+              <DataTable
+                data={tableData}
+
+                className="overflow-hidden  rounded-xl  bg-white  dark:bg-white/[0.03]" columns={columns}>
+              </DataTable>
             </div>
           </div>
         </div>

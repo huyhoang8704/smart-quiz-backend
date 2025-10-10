@@ -8,6 +8,7 @@ import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
+  FolderIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
@@ -81,12 +82,12 @@ const navItemsTeacher: NavItem[] = [
     path: "/quizzs",
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <ListIcon />,
     name: "Danh sách bài kiểm tra",
     path: "/quizzresult",
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <FolderIcon />,
     name: "Quản lý tài liệu",
     path: "/materials",
   },

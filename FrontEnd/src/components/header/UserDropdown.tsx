@@ -12,22 +12,28 @@ export default function UserDropdown() {
   const { data } = useSession()
 
   useEffect(() => {
-    if (!data?.user) { signOut({ callbackUrl: '/signin' }) } else {
-      axiosInstance.interceptors.request.use(
-        async (config) => {
-          // Check if running on the server
-          // This code runs on the client
-          const token = data.user.backendToken
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-          }
+    const klll = setTimeout(() => {
+      if (!data?.user) { signOut({ callbackUrl: '/signin' }) } else {
+        axiosInstance.interceptors.request.use(
+          async (config) => {
+            // Check if running on the server
+            // This code runs on the client
+            const token = data.user.backendToken
+            if (token) {
+              config.headers.Authorization = `Bearer ${token}`;
+            }
 
-          return config;
-        },
-        (error) => {
-          return Promise.reject(error);
-        }
-      );
+            return config;
+          },
+          (error) => {
+            return Promise.reject(error);
+          }
+        );
+      }
+    }, 1000)
+
+    return () => {
+      clearTimeout(klll)
     }
   }, [data]);
 
@@ -51,7 +57,7 @@ export default function UserDropdown() {
           <Image
             width={44}
             height={44}
-            src="https://avatars.githubusercontent.com/u/30893021?v=4&size=64"
+            src="/images/logo/bkLogo.svg"
             alt="User"
           />
         </span>
@@ -92,7 +98,7 @@ export default function UserDropdown() {
         </div>
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
-          <li>
+          {/* <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
@@ -116,7 +122,7 @@ export default function UserDropdown() {
               </svg>
               Edit profile
             </DropdownItem>
-          </li>
+          </li> */}
           {/* <li>
             <DropdownItem
               onItemClick={closeDropdown}
