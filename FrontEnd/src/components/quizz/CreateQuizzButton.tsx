@@ -210,7 +210,9 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                     <Label>Tập trung vào các chủ đề</Label>
                                     <CreatableSelect isMulti onChange={(newVal) => {
                                         setFocusAreas(newVal.map((x: any) => x.value))
-                                    }} />
+                                    }}
+                                        components={{ NoOptionsMessage: () => <p className="text-sm text-gray-500 dark:text-gray-400">Thêm chủ đề bằng cách nhập và enter</p> }}
+                                    />
                                 </div>
 
                                 <div>
@@ -218,6 +220,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                     <TextArea
                                         value={customInstructions}
                                         onChange={(value) => setCustomInstructions(value)}
+                                        className="text-base font-medium text-gray-800 dark:text-white/90"
                                         rows={6}
                                     />
                                 </div>
