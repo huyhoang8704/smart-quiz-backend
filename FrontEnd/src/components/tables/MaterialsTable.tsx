@@ -218,7 +218,33 @@ export default function MaterialsTable() {
 
           <div className="max-w-full overflow-x-auto">
             <div className="min-w-[1102px] p-8">
-              <DataTable data={tableData} className="overflow-hidden  rounded-xl  bg-white  dark:bg-white/[0.03]" columns={columns}>
+              <DataTable data={tableData} className="overflow-hidden  rounded-xl  bg-white  dark:bg-white/[0.03]" columns={columns}
+                options={{
+                  language: {
+                    search: '_INPUT_',
+                    searchPlaceholder: 'Nhập từ khoá muốn tìm kiếm',
+                    paginate: {
+                      first: 'Đầu',
+                      last: 'Cuối',
+                      next: "Tiếp theo",
+                      previous: 'Về trước'
+                    },
+                    lengthMenu: 'Hiển thị _MENU_ dòng dữ liệu',
+                    emptyTable: 'Không có dữ liệu',
+                    info: 'Hiển thị từ _START_ đến _END_ trên _TOTAL_ dữ liệu',
+                    infoEmpty: 'Không có dữ liệu', // Change this string
+
+
+                  }
+                  // layout: {
+                  //   topEnd: {
+                  //     search: {
+
+                  //       placeholder: 'Nhập từ khoá muốn tìm kiếm'
+                  //     }
+                  //   }
+                  // }
+                }}>
                 {/* <thead>
               <tr>
                 <th>Tên quizz</th>
