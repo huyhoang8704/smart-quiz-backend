@@ -10,11 +10,6 @@ const getAttemptsByQuiz = async (req, res) => {
     const quiz = await Quiz.findById(id);
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
 
-    // Kiểm tra user có phải là teacher của quiz không
-    if (quiz.ownerId.toString() !== req.user.id.toString()) {
-      return res.status(403).json({ message: "Access denied" });
-    }
-
     const attempts = await QuizAttempt.find({ quizId: id })
       .populate("studentId", "username email") // lấy thông tin học sinh
       .sort({ createdAt: -1 });

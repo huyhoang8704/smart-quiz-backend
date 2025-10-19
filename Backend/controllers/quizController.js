@@ -768,53 +768,89 @@ const deleteQuiz = async (req, res) => {
 // Sinh viên làm quiz
 const attemptQuiz = async (req, res) => {
   try {
-    const { answers } = req.body;
-    const quiz = await Quiz.findById(req.params.id);
+    const quizId = req.params.quizId;
+    const answers  = req.body;
+    const studentId = req.user.id;
 
-    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+    if (!answers || !Array.isArray(answers)) {
+      return res.status(400).json({ message: "Danh sách câu trả lời không hợp lệ." });
+    }
+
+    if (!quizId) {
+      return res.status(400).json({ message: "Quiz ID không được để trống." });
+    }
+
+    // 1️⃣ Lấy quiz từ DB
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      return res.status(404).json({ message: "Không tìm thấy quiz." });
+    }
 
     let correctCount = 0;
-    const details = quiz.questions.map((q) => {
-      const userAnswerObj = answers.find(
-        (a) => a.questionId === q._id.toString()
+    const resultDetails = [];
+
+    // 2️⃣ Duyệt qua từng câu hỏi và chấm điểm
+    quiz.questions.forEach((question) => {
+      const userAnswer = answers.find(
+        (a) => a.questionId === question._id.toString()
       );
-      const userAnswer = userAnswerObj ? userAnswerObj.answer : null;
-      const isCorrect =
-        userAnswer &&
-        userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
+
+      if (!userAnswer) {
+        resultDetails.push({
+          questionId: question._id,
+          question: question.question,
+          correctAnswer: question.answer,
+          userAnswer: null,
+          isCorrect: false,
+        });
+        return;
+      }
+
+      const correctAns = question.answer.trim().toLowerCase();
+      const userAns = userAnswer.answer.trim().toLowerCase();
+
+      let isCorrect = userAns === correctAns;
 
       if (isCorrect) correctCount++;
 
-      return {
-        questionId: q._id,
-        question: q.question,
-        correctAnswer: q.answer,
-        userAnswer,
+      resultDetails.push({
+        questionId: question._id,
+        question: question.question,
+        correctAnswer: question.answer,
+        userAnswer: userAnswer.answer,
         isCorrect,
-      };
+      });
     });
 
-    const attempt = new QuizAttempt({
-      quizId: quiz._id,
-      studentId: req.user.id, // lấy từ token
-      score: correctCount,
-      totalQuestions: quiz.questions.length,
+    const totalQuestions = quiz.questions.length;
+    const score = (correctCount / totalQuestions) * 100;
+
+    // 3️⃣ Tạo bản ghi lịch sử làm bài
+    const attempt = await QuizAttempt.create({
+      quizId,
+      studentId,
+      score: Number(score.toFixed(2)),
+      totalQuestions,
       correctAnswers: correctCount,
-      details,
+      details: resultDetails,
     });
 
-    await attempt.save();
-
-    res.json({
-      quizId: quiz._id,
-      score: correctCount,
-      totalQuestions: quiz.questions.length,
-      correctAnswers: correctCount,
-      details,
+    // 4️⃣ Trả về kết quả cho client
+    res.status(201).json({
+      message: "Làm quiz thành công!",
+      quizId,
+      quizTitle: quiz.title,
+      studentId,
+      totalQuestions,
+      correctCount,
+      score: Number(score.toFixed(2)),
+      details: resultDetails,
       attemptId: attempt._id,
+      createdAt: attempt.createdAt,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("❌ Lỗi khi chấm quiz:", error);
+    res.status(500).json({ message: "Lỗi server khi chấm quiz.", error: error.message });
   }
 };
 

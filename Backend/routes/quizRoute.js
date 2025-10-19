@@ -138,7 +138,7 @@ router.post("/", auth, quizController.createQuiz);
  *       404:
  *         description: Quiz not found
  */
-router.get("/:id", auth, quizController.getQuizById);
+router.get("/:id", quizController.getQuizById);
 
 /**
  * @swagger
@@ -452,52 +452,116 @@ router.post("/generate", auth, quizController.generateQuiz);
 
 /**
  * @swagger
- * /api/quizzes/{id}/attempt:
+ * /api/quizzes/{quizId}/attempt:
  *   post:
- *     summary: Attempt a quiz
- *     description: Student submits answers and gets score
- *     tags: [Quiz]
+ *     summary: "Nộp bài làm quiz và chấm điểm tự động"
+ *     description: "API cho phép sinh viên nộp câu trả lời cho một quiz, hệ thống sẽ chấm điểm và lưu lịch sử làm bài (QuizAttempt)."
+ *     tags:
+ *       - Quiz Attempts
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: quizId
+ *         in: path
  *         required: true
- *         example: "68cd3bbbc2675789057fe3f2"
+ *         description: ID của quiz cần nộp bài.
  *         schema:
  *           type: string
- *         description: Quiz ID
+ *           example: "68dbfa7eee1b12b6bce86575"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               answers:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     questionId:
- *                       type: string
- *                     answer:
- *                       type: string
- *                 example:
- *                   - questionId: "68cd3bbbc2675789057fe3f3"
- *                     answer: "Ngôn ngữ lập trình"
- *                   - questionId: "68cd3bbbc2675789057fe3f4"
- *                     answer: "False"
- *                   - questionId: "68cd3bbbc2675789057fe3f5"
- *                     answer: "HTTP"
- *
+ *             type: array
+ *             description: Danh sách câu trả lời của sinh viên.
+ *             items:
+ *               type: object
+ *               properties:
+ *                 questionId:
+ *                   type: string
+ *                   description: ID của câu hỏi.
+ *                   example: "68dbfa7eee1b12b6bce86579"
+ *                 answer:
+ *                   type: string
+ *                   description: Câu trả lời của sinh viên.
+ *                   example: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
+ *           example:
+ *             - questionId: "68dbfa7eee1b12b6bce86579"
+ *               answer: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
+ *             - questionId: "68dbfa7eee1b12b6bce8657a"
+ *               answer: "Độ nhạy cao của hệ thống đối với các điều kiện ban đầu, dẫn đến sai số tích lũy nhanh chóng."
+ *             - questionId: "68dbfa7eee1b12b6bce8657b"
+ *               answer: "Khả năng mở rộng mô hình để bao gồm nhiều biến hơn."
+ *             - questionId: "68dbfa7eee1b12b6bce86583"
+ *               answer: "mô hình hóa"
+ *             - questionId: "68dbfa7eee1b12b6bce86587"
+ *               answer: "xác thực"
  *     responses:
- *       200:
- *         description: Quiz result
+ *       201:
+ *         description: "Làm quiz thành công"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Làm quiz thành công!"
+ *                 quizId:
+ *                   type: string
+ *                   example: "68dbfa7eee1b12b6bce86575"
+ *                 quizTitle:
+ *                   type: string
+ *                   example: "Quiz Mô hình hoá Toán học"
+ *                 studentId:
+ *                   type: string
+ *                   example: "68cd25ee7fb350d4799d9df9"
+ *                 totalQuestions:
+ *                   type: integer
+ *                   example: 15
+ *                 correctCount:
+ *                   type: integer
+ *                   example: 5
+ *                 score:
+ *                   type: number
+ *                   example: 33.33
+ *                 details:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       questionId:
+ *                         type: string
+ *                         example: "68dbfa7eee1b12b6bce86579"
+ *                       question:
+ *                         type: string
+ *                         example: "Trong bối cảnh phân tích độ nhạy..."
+ *                       correctAnswer:
+ *                         type: string
+ *                         example: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
+ *                       userAnswer:
+ *                         type: string
+ *                         example: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
+ *                       isCorrect:
+ *                         type: boolean
+ *                         example: true
+ *                 attemptId:
+ *                   type: string
+ *                   example: "68dbfc1e57c8b43a4a11d123"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2025-10-19T11:30:00.432Z"
+ *       400:
+ *         description: "Thiếu dữ liệu hoặc danh sách câu trả lời không hợp lệ"
  *       404:
- *         description: Quiz not found
+ *         description: "Không tìm thấy quiz"
+ *       500:
+ *         description: "Lỗi server khi chấm quiz"
  */
-router.post("/:id/attempt", auth, quizController.attemptQuiz);
+
+router.post("/:quizId/attempt", auth, quizController.attemptQuiz);
 
 /**
  * @swagger
