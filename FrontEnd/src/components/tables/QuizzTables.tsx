@@ -83,12 +83,12 @@ export default function QuizzTables() {
 
       // setTableData(x)
 
-      for (let i = 0; i < x.length; i++) {
-        const element = x[i];
-        const rrr = await axiosInstance(`/api/quizzes/${element._id}/attempts`)
-        console.log("🚀 ~ QuizzTables ~ rrr:", rrr)
-        x[i].quizzAttemptsCount = rrr.data.length
-      }
+      // for (let i = 0; i < x.length; i++) {
+      //   const element = x[i];
+      //   const rrr = await axiosInstance(`/api/quizzes/${element._id}/attempts`)
+      //   console.log("🚀 ~ QuizzTables ~ rrr:", rrr)
+      //   x[i].quizzAttemptsCount = rrr.data.length
+      // }
       setTableData(x)
       setLoading(false)
     })
@@ -136,7 +136,7 @@ export default function QuizzTables() {
     { data: 'title', title: "Tên quizz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     { data: 'settings.totalQuestions', title: "Tổng số câu hỏi", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     // { data: 'settings.difficulty', title: "Độ khó" },
-    { data: "quizzAttemptsCount", title: "Số bài quizz đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
+    // { data: "quizzAttemptsCount", title: "Số bài quizz đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     {
       data: '_id', // No data source for this column, we'll render it manually
       // defaultContent: <Button size="sm" variant="primary" endIcon={<BoxIcon />}>
@@ -181,6 +181,12 @@ export default function QuizzTables() {
               }
             }}>
               Xoá
+            </Button>
+
+            <Button size="sm" variant="primary" className="bg-sky-400 hover:bg-sky-950 text-white font-bold py-2 px-4 rounded" onClick={async () => {
+              push(`/quizzs/${data}/take`)
+            }}>
+              Làm quizz
             </Button>
           </div>
         );

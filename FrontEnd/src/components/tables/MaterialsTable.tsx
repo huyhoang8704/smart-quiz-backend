@@ -236,14 +236,6 @@ export default function MaterialsTable() {
 
 
                   }
-                  // layout: {
-                  //   topEnd: {
-                  //     search: {
-
-                  //       placeholder: 'Nhập từ khoá muốn tìm kiếm'
-                  //     }
-                  //   }
-                  // }
                 }}>
                 {/* <thead>
               <tr>

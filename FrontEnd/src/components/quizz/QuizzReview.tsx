@@ -18,7 +18,7 @@ export default function QuizzReview(props: {
                             return <Radio
                                 key={indexOp}
                                 id={question._id + indexOp.toString()}
-                                name="group1"
+                                name={question._id}
                                 value={x}
                                 checked={x === question.answer}
                                 onChange={() => { }}
