@@ -14,10 +14,14 @@ import Button from "../ui/button/Button";
 import { BoxIcon } from "@/icons";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+
 
 
 
 export default function QuizzTake(data: { quizzId: string }) {
+    const { replace } = useRouter()
+
     const getQuizzDetail = useCallback(async (id: string) => {
         const rs = await axiosInstance(`/api/quizzes/${id}`, {
             method: "GET",
@@ -105,8 +109,10 @@ export default function QuizzTake(data: { quizzId: string }) {
             Swal.close()
             toast.success(rs.message, { position: "bottom-right" })
             console.log("🚀 ~ handleOnClickSubmit ~ rs:", rs)
+            replace(`/quizzresult`)
+
         }
-    }, [submitQuizzAnswered])
+    }, [submitQuizzAnswered, replace])
 
     useEffect(() => {
         getQuizzDetail(data.quizzId).then(rs => {

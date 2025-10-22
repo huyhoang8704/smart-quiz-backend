@@ -1,5 +1,6 @@
 import ComponentCard from "@/components/common/ComponentCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import QuizzTablesAttempts from "@/components/tables/QuizzTablesAttempts";
 import { Metadata } from "next";
 import React from "react";
 
@@ -15,10 +16,11 @@ export default function BasicTables() {
     <div>
       <PageBreadcrumb pageTitle="Danh sách bài kiểm tra" />
       <div className="space-y-6">
-        <ComponentCard title="Basic Table 1">
-          {/* <BasicTableOne /> */}
-          <p>Đang trong quá trình xây dựng</p>
-        </ComponentCard>
+        <QuizzTablesAttempts />
+        {/* <ComponentCard title="Danh sách các bài kiểm tra">
+
+
+        </ComponentCard> */}
       </div>
     </div>
   );

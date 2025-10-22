@@ -449,9 +449,9 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {isTeacher && renderMenuItems(navItemsTeacher, "main")}
-              {isStudent && renderMenuItems(navItemsStudent, "main")}
-              {isAdmin && renderMenuItems(navItemsAdmin, "main")}
+              {renderMenuItems(navItemsTeacher, "main")}
+              {/* {isStudent && renderMenuItems(navItemsStudent, "main")}
+              {isAdmin && renderMenuItems(navItemsAdmin, "main")} */}
 
 
               {!isProduction && renderMenuItems(navItems, "main")}
