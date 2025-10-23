@@ -76,11 +76,11 @@ const navItemsTeacher: NavItem[] = [
   //   name: "Danh sách học viên",
   //   path: "/studentlist",
   // },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Danh sách bài quizz",
-    path: "/quizzs",
-  },
+  // {
+  //   icon: <BoxCubeIcon />,
+  //   name: "Danh sách bài quizz",
+  //   path: "/quizzs",
+  // },
   {
     icon: <ListIcon />,
     name: "Danh sách bài kiểm tra",

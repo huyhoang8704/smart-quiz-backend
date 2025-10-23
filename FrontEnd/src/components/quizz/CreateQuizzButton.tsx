@@ -94,14 +94,25 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
         const dataRequest: RequestCreateQuizz = {
             "materialId": selectedFile,
             settings: {
-                questionConfigs: questionConfigs,
+                questionConfigs: questionConfigs.filter(x => x.count !== 0),
                 customTitle: quizzName,
                 customInstructions: customInstructions,
                 focusAreas: focusAreas
             },
 
         }
+        for (let i = 0; i < dataRequest.settings.questionConfigs.length; i++) {
+            const element = dataRequest.settings.questionConfigs[i];
+            if (element.count < 0) {
+                return toast.error("Số câu hỏi phải lớn hơn hoặc bằng 0", { position: "bottom-right" })
+            }
 
+            if (element.count > 20) {
+                return toast.error("Số câu hỏi phải ít hơn 20", { position: "bottom-right" })
+            }
+
+
+        }
         console.log("🚀 ~ handleSave ~ dataRequest:", dataRequest)
         setInProcess(true)
         Swal.fire({
@@ -122,8 +133,8 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
 
 
         Swal.close()
-        if (createRs.status === 500) {
-            closeModal()
+        if (createRs.status === 500 || createRs.status === 400) {
+            // closeModal()
             return toast.error(createRs?.response?.data?.error || createRs.message, { position: "bottom-right" })
         }
 
@@ -173,6 +184,9 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                     <Input
                                         type="text"
                                         defaultValue={quizzName}
+                                        // value={quizzName}
+                                        maxLength={20}
+                                        minLength={1}
                                         onChange={event => setQuizzName(event.target.value)}
                                     />
                                 </div>
@@ -212,6 +226,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                     <CreatableSelect isMulti onChange={(newVal) => {
                                         setFocusAreas(newVal.map((x: any) => x.value))
                                     }}
+                                        placeholder="Nhập và chọn các chủ đề"
                                         components={{ NoOptionsMessage: () => <p className="text-sm text-gray-500 dark:text-gray-400">Thêm chủ đề bằng cách nhập và enter</p> }}
                                     />
                                 </div>

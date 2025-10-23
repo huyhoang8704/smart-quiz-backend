@@ -66,6 +66,8 @@ const QuestionConfigs = forwardRef<{
                 <Input
                     type="number"
                     defaultValue={configMcq.count}
+                    min={0}
+                    max={20}
                     onChange={event => {
                         setConfigMcq(pre => ({ ...pre, count: Number(event.target.value) }))
                     }}
@@ -101,6 +103,8 @@ const QuestionConfigs = forwardRef<{
                 <Label>Số câu</Label>
                 <Input
                     type="number"
+                    min={0}
+                    max={20}
                     defaultValue={configTrueFalse.count}
                     onChange={event => {
                         setConfigTrueFalse(pre => ({ ...pre, count: Number(event.target.value) }))
@@ -118,6 +122,7 @@ const QuestionConfigs = forwardRef<{
                             { value: "hard", label: "Khó", },
                         ]}
                         placeholder="Chọn độ khó"
+
                         defaultValue={configMcq.difficulty}
                         onChange={(value: string) => {
                             setConfigTrueFalse(prev => ({ ...prev, difficulty: value }))
@@ -137,8 +142,11 @@ const QuestionConfigs = forwardRef<{
                 <Label>Số câu</Label>
                 <Input
                     type="number"
+                    min={0}
+                    max={20}
                     defaultValue={configFillBlank.count}
                     onChange={event => {
+                        if (Number(event.target.value) < 0) return;
                         setConfigFillBlank(pre => ({ ...pre, count: Number(event.target.value) }))
                     }}
                 />

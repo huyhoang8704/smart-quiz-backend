@@ -7,6 +7,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { validateEmail } from "@/utils/commom";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +18,7 @@ export default function SignUpForm() {
     name: '',
     email: '',
     password: '',
+    passwordcorrect: '',
   });
 
   const handleChange = (e: any) => {
@@ -148,6 +150,8 @@ export default function SignUpForm() {
                     type="text"
                     id="name"
                     name="name"
+                    maxLength={50}
+                    minLength={2}
                     placeholder="Nhập họ và tên"
                     value={formData.name} onChange={handleChange}
                   />
@@ -162,6 +166,11 @@ export default function SignUpForm() {
                     id="email"
                     name="email"
                     placeholder="Nhập email"
+                    maxLength={50}
+                    minLength={5}
+                    error={validateEmail(formData.email) === false && formData.email.length > 0}
+                    required
+
                     value={formData.email} onChange={handleChange}
                   />
                 </div>
@@ -172,7 +181,7 @@ export default function SignUpForm() {
                   </Label>
                   <div className="relative">
                     <Input
-                      placeholder="Enter your password"
+                      placeholder="Nhập mật khẩu"
                       name="password"
                       type={showPassword ? "text" : "password"}
                       value={formData.password} onChange={handleChange}
@@ -189,6 +198,30 @@ export default function SignUpForm() {
                     </span>
                   </div>
                 </div>
+
+                {/* <div>
+                  <Label>
+                    Nhập lại mật khẩu<span className="text-error-500">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      placeholder="Nhập lại mật khẩu"
+                      name="passwordcorrect"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.passwordcorrect} onChange={handleChange}
+                    />
+                    <span
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+                    >
+                      {showPassword ? (
+                        <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
+                      ) : (
+                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
+                      )}
+                    </span>
+                  </div>
+                </div> */}
                 {/* <!-- Checkbox --> */}
                 {/* <div className="flex items-center gap-3">
                   <Checkbox

@@ -5,6 +5,7 @@ import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { validateEmail } from "@/utils/commom";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -140,8 +141,10 @@ export default function SignInForm() {
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
                   <Input placeholder="info@gmail.com" type="email"
-                    defaultValue={email}
+                    value={email}
+                    error={validateEmail(email) === false && email.length > 0}
                     name="email"
+                    required
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
@@ -155,6 +158,8 @@ export default function SignInForm() {
                       defaultValue={password}
                       type={showPassword ? "text" : "password"}
                       placeholder="Nhập mật khẩu"
+                      required
+                      minLength={1}
                       onChange={(e) => setPassword(e.target.value)}
                     />
                     <span
