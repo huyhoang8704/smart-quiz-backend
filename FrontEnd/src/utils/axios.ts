@@ -2,7 +2,7 @@ import axios from 'axios';
 
 
 const axiosInstance = axios.create({
-    baseURL: "https://quanlyduanapi.duytung-developer.io.vn", // Your API base URL
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
 });
 
 axiosInstance.interceptors.request.use(

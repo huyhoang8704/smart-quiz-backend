@@ -22,7 +22,7 @@ const DataTable = dynamic(
   { ssr: false }
 );
 import { ConfigColumns } from 'datatables.net-dt';
-import axiosInstance from "@/utils/axios";
+
 import Button from "../ui/button/Button";
 
 import ComponentCard from "../common/ComponentCard";
@@ -30,10 +30,12 @@ import { hydrateRoot } from "react-dom/client";
 
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 
 
 
 export default function QuizzTablesAttempts() {
+  const { axiosInstance, status } = useAxiosAuth(); // <--- Lấy instance đã có token
 
   const getListData = useCallback(async () => {
     const rs = await axiosInstance(`/api/quizzes`, {
@@ -41,7 +43,7 @@ export default function QuizzTablesAttempts() {
     })
     console.log(rs.data)
     return rs.data
-  }, [])
+  }, [axiosInstance])
 
   const [tableData, setTableData] = useState([
   ]);
@@ -66,13 +68,14 @@ export default function QuizzTablesAttempts() {
       console.log("🚀 ~ QuizzTablesAttempts ~ e:", e)
       setLoading(false)
     })
-  }, [getListData])
+  }, [axiosInstance, getListData])
 
 
 
   useEffect(() => {
-    refreshData()
-  }, [refreshData])
+    if (status === "authenticated")
+      refreshData()
+  }, [refreshData, status])
 
   useEffect(() => {
     if (loading) {

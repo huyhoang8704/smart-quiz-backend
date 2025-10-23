@@ -6,16 +6,18 @@ import Input from "../form/input/InputField";
 import { BoxIcon } from "@/icons";
 import TextArea from "../form/input/TextArea";
 import { useState } from "react";
-import axiosInstance from "@/utils/axios";
+
 import { toast } from "react-toastify";
 import FileInput from "../form/input/FileInput";
 import Swal from "sweetalert2";
+import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 
 export default function UploadMaterial(props: { onSuccess?: () => void }) {
     const { isOpen, openModal, closeModal } = useModal();
     const [selectedFile, setSelectedFile] = useState(null);
     const [fileName, setFileName] = useState("")
     const [desc, setDesc] = useState("")
+    const { axiosInstance } = useAxiosAuth(); // <--- Lấy instance đã có token
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files?.[0])

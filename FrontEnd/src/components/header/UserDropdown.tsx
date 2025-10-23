@@ -5,38 +5,21 @@ import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { signOut, useSession } from "next-auth/react";
-import axiosInstance from "@/utils/axios";
+
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const { data } = useSession()
+  const { data, status } = useSession()
 
   useEffect(() => {
     const klll = setTimeout(() => {
-      if (!data?.user) { signOut({ callbackUrl: '/signin' }) } else {
-        axiosInstance.interceptors.request.use(
-          async (config) => {
-            // Check if running on the server
-            // This code runs on the client
-            const token = data.user.backendToken
-            if (token) {
-              config.headers.Authorization = `Bearer ${token}`;
-            }
-
-            return config;
-          },
-          (error) => {
-            return Promise.reject(error);
-          }
-        );
-      }
-    }, 1000)
+      if (!data?.user && status === "unauthenticated") { signOut({ callbackUrl: '/signin' }) }
+    }, 10000)
 
     return () => {
       clearTimeout(klll)
     }
-  }, [data]);
-
+  }, [data, status]);
 
 
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {

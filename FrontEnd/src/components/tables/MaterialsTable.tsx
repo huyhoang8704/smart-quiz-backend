@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import dynamic from 'next/dynamic';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
 
@@ -25,7 +25,7 @@ const DataTable = dynamic(
   },
   { ssr: false }
 );
-import axiosInstance from "@/utils/axios";
+
 import Button from "../ui/button/Button";
 
 import ComponentCard from "../common/ComponentCard";
@@ -35,6 +35,7 @@ import UploadMaterial from "../materials/UploadMaterial";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 
 
 
@@ -54,20 +55,25 @@ export default function MaterialsTable() {
   ]);
 
   const { push } = useRouter()
+  const { axiosInstance, status } = useAxiosAuth(); // <--- Lấy instance đã có token
 
-  const getListData = async () => {
+
+  const getListData = useCallback(async () => {
     const rs = await axiosInstance(`/api/materials`, {
       method: "GET",
     })
     console.log(rs.data)
     return rs.data
-  }
+  }, [axiosInstance])
 
   useEffect(() => {
-    getListData().then(async x => {
-      setTableData(x)
-    })
-  }, [])
+    if (status === "authenticated") {
+
+      getListData().then(async x => {
+        setTableData(x)
+      })
+    }
+  }, [getListData, status])
 
   const deleteFile = async (id: string) => {
     Swal.fire({

@@ -9,6 +9,8 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 export default function SignInForm() {
   const router = useRouter();
@@ -21,7 +23,17 @@ export default function SignInForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    Swal.fire({
+      title: "Đang đăng nhập",
+      html: "Vui lòng đợi trong giây lát!",
+      icon: "info",
+      showConfirmButton: false,
+      showDenyButton: false,
+      showCancelButton: false,
+      allowOutsideClick: false,
+      timerProgressBar: true,
+      allowEscapeKey: false
+    })
     try {
       const result = await signIn("credentials", {
         redirect: false, // Prevents automatic redirect on successful login
@@ -32,12 +44,18 @@ export default function SignInForm() {
       if (result?.error) {
         console.log("🚀 ~ handleSubmit ~ result?.error:", result?.error)
         // setError(result.error);
+        Swal.close()
+        toast.error("Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin.", {
+          position: "bottom-right",
+        });
       } else {
+        Swal.close()
         router.push("/"); // Redirect to the dashboard on success
       }
     } catch (err) {
       console.log("🚀 ~ handleSubmit ~ err:", err)
       // setError("An unexpected error occurred.");
+      Swal.close()
     }
   };
 

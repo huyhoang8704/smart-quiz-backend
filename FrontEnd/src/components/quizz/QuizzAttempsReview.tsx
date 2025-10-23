@@ -5,8 +5,6 @@ import 'react-responsive-modal/styles.css';
 
 import ComponentCard from "../common/ComponentCard";
 
-import axiosInstance from "@/utils/axios";
-import QuizzReview from "./QuizzReview";
 import { DIFFICULTY_NAME, QUIZZ_TYPE_NAME } from "@/utils/enum";
 import QuizzTakeExample from "./QuizzTakeExample";
 import { QuizzDataType } from "@/utils/types";
@@ -21,6 +19,7 @@ import Label from "../form/Label";
 import { Modal } from "../ui/modal";
 import { useModal } from "@/hooks/useModal";
 import QuizzAttempsReviewDetail from "./QuizzAttempsReviewDetail";
+import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 
 
 
@@ -29,6 +28,7 @@ import QuizzAttempsReviewDetail from "./QuizzAttempsReviewDetail";
 export default function QuizzAttempsReview(data: { quizzId: string }) {
     const { replace } = useRouter()
     const { isOpen, openModal, closeModal } = useModal();
+    const { axiosInstance, status } = useAxiosAuth(); // <--- Lấy instance đã có token
 
     const getQuizzDetail = useCallback(async (id: string) => {
         const rs = await axiosInstance(`/api/quizzes/${id}`, {
@@ -36,7 +36,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
         })
         console.log(rs.data)
         return rs.data
-    }, [])
+    }, [axiosInstance])
 
     const getQuizzAttemps = useCallback(async (id: string) => {
         try {
@@ -49,7 +49,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
             console.log("🚀 ~ QuizzAttempsReview ~ error:", error)
             return []
         }
-    }, [])
+    }, [axiosInstance])
 
     const submitQuizzAnswered = useCallback(async (dataSubmit: any) => {
         const rs = await axiosInstance(`/api/quizzes/${data.quizzId}/attempt`, {
@@ -58,7 +58,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
         })
         console.log(rs.data)
         return rs.data
-    }, [data.quizzId])
+    }, [data.quizzId, axiosInstance])
 
     const [quizzData, setQuizzData] = useState<{
         settings: {
@@ -163,6 +163,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
     }, [submitQuizzAnswered, replace])
 
     useEffect(() => {
+        if (status !== "authenticated") return;
         getQuizzDetail(data.quizzId).then(rs => {
             console.log("🚀 ~ QuizzDetail ~ rs:", rs)
             setQuizzData(rs)
@@ -172,7 +173,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
             console.log("🚀 ~ getQuizzAttemps ~ rs:", rs)
             setListAttempts(rs)
         })
-    }, [data.quizzId, getQuizzDetail, getQuizzAttemps])
+    }, [data.quizzId, getQuizzDetail, getQuizzAttemps, status])
 
     return <>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">

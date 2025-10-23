@@ -47,6 +47,8 @@ import CreateQuizzButton from "../quizz/CreateQuizzButton";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 
+import { useAxiosAuth } from "@/hooks/useAxiosAuth";
+
 // DataTablesCore.Buttons.jszip(jszip);
 // DataTablesCore.Buttons.pdfMake(pdfmake);
 // if (typeof window !== 'undefined') {
@@ -58,14 +60,14 @@ import { toast } from "react-toastify";
 
 
 export default function QuizzTables() {
-
+  const { axiosInstance: axiosAuth, status } = useAxiosAuth(); // <--- Lấy instance đã có token
   const getListData = useCallback(async () => {
-    const rs = await axiosInstance(`/api/quizzes`, {
+    const rs = await axiosAuth(`/api/quizzes`, {
       method: "GET",
     })
     console.log(rs.data)
     return rs.data
-  }, [])
+  }, [axiosAuth])
 
   const [tableData, setTableData] = useState([
   ]);
@@ -77,18 +79,6 @@ export default function QuizzTables() {
   const refreshData = useCallback(() => {
     setLoading(true)
     getListData().then(async x => {
-      // setTableData(x.map(datas => {
-      //   return [datas.title, datas.settings.numQuestions, datas.settings.difficulty]
-      // }))
-
-      // setTableData(x)
-
-      // for (let i = 0; i < x.length; i++) {
-      //   const element = x[i];
-      //   const rrr = await axiosInstance(`/api/quizzes/${element._id}/attempts`)
-      //   console.log("🚀 ~ QuizzTables ~ rrr:", rrr)
-      //   x[i].quizzAttemptsCount = rrr.data.length
-      // }
       setTableData(x)
       setLoading(false)
     })
@@ -97,21 +87,21 @@ export default function QuizzTables() {
 
   const deleteQuizz = useCallback(async (id: string) => {
     try {
-      const rs = await axiosInstance(`/api/quizzes/${id}`, {
+      const rs = await axiosAuth(`/api/quizzes/${id}`, {
         method: "DELETE",
       })
 
       return rs.data
     } catch (error) {
       return error
-
     }
-  }, [])
+  }, [axiosAuth])
 
 
   useEffect(() => {
-    refreshData()
-  }, [refreshData])
+    if (status === "authenticated")
+      refreshData()
+  }, [refreshData, status])
 
   useEffect(() => {
     if (loading) {

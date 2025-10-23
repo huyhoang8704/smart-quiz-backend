@@ -16,6 +16,7 @@ import CreatableSelect from 'react-select/creatable';
 import Swal from 'sweetalert2';
 import QuizzReview from "./QuizzReview";
 import { QuizzDataType, RequestCreateQuizz } from "@/utils/types";
+import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 
 
 const getListData = async () => {
@@ -55,10 +56,9 @@ const deleteQuizz = async (id: string) => {
 
 
 export default function CreateQuizzButton(props: { onCreateSuccess?: () => void }) {
+    const { status } = useAxiosAuth()
     const { isOpen, openModal, closeModal } = useModal();
     const { isOpen: isOpenPreview, openModal: openModalPreview, closeModal: closeModalPrivew } = useModal();
-
-
     const [quizzDataCreate, setQuizzDataCreate] = useState<QuizzDataType>()
 
 
@@ -139,10 +139,11 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
     }, [closeModal, customInstructions, focusAreas, props, quizzName, selectedFile, openModalPreview])
 
     useEffect(() => {
-        getListData().then(async x => {
-            setListMarterials(x)
-        })
-    }, [])
+        if (status === "authenticated")
+            getListData().then(async x => {
+                setListMarterials(x)
+            })
+    }, [status])
 
     return <>
         <Button size="sm" variant="primary" endIcon={<BoxIcon
