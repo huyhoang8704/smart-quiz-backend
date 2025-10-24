@@ -19,8 +19,8 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
 
-  const [email, setEmail] = useState("teacher@gmail.com");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,7 +159,7 @@ export default function SignInForm() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Nhập mật khẩu"
                       required
-                      minLength={1}
+                      minLength={6}
                       onChange={(e) => setPassword(e.target.value)}
                     />
                     <span
