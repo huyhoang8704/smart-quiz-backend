@@ -176,7 +176,7 @@ export default function QuizzTables() {
             <Button size="sm" variant="primary" className="bg-sky-400 hover:bg-sky-950 text-white font-bold py-2 px-4 rounded" onClick={async () => {
               push(`/quizzs/${data}/take`)
             }}>
-              Làm quizz
+              Làm bài
             </Button>
           </div>
         );
