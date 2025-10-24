@@ -3,11 +3,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import 'react-responsive-modal/styles.css';
 
-import ComponentCard from "../common/ComponentCard";
-
-import axiosInstance from "@/utils/axios";
-import QuizzReview from "./QuizzReview";
-import { DIFFICULTY_NAME, QUIZZ_TYPE_NAME } from "@/utils/enum";
 import QuizzTakeExample from "./QuizzTakeExample";
 import { QuizzDataType } from "@/utils/types";
 import Button from "../ui/button/Button";
@@ -15,20 +10,21 @@ import { BoxIcon } from "@/icons";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 
 
 
 
 export default function QuizzTake(data: { quizzId: string }) {
     const { replace } = useRouter()
-
+    const { axiosInstance } = useAxiosAuth()
     const getQuizzDetail = useCallback(async (id: string) => {
         const rs = await axiosInstance(`/api/quizzes/${id}`, {
             method: "GET",
         })
         console.log(rs.data)
         return rs.data
-    }, [])
+    }, [axiosInstance])
 
     const submitQuizzAnswered = useCallback(async (dataSubmit: any) => {
         const rs = await axiosInstance(`/api/quizzes/${data.quizzId}/attempt`, {
@@ -37,7 +33,7 @@ export default function QuizzTake(data: { quizzId: string }) {
         })
         console.log(rs.data)
         return rs.data
-    }, [data.quizzId])
+    }, [data.quizzId, axiosInstance])
 
     const [quizzData, setQuizzData] = useState<{
         settings: {
@@ -88,28 +84,36 @@ export default function QuizzTake(data: { quizzId: string }) {
         const answeredQuestions = quizzTakeExampleRef.current?.getData()
         console.log("🚀 ~ handleOnClickSubmit ~ answeredQuestions:", answeredQuestions)
         if (answeredQuestions) {
-            Swal.fire({
-                title: "Đang nộp bài...",
-                html: "Vui lòng đợi trong giây lát!",
-                icon: "info",
-                showConfirmButton: false,
-                showDenyButton: false,
-                showCancelButton: false,
-                allowOutsideClick: false,
-                timerProgressBar: true,
-                allowEscapeKey: false
-            })
+            try {
+                Swal.fire({
+                    title: "Đang nộp bài...",
+                    html: "Vui lòng đợi trong giây lát!",
+                    icon: "info",
+                    showConfirmButton: false,
+                    showDenyButton: false,
+                    showCancelButton: false,
+                    allowOutsideClick: false,
+                    timerProgressBar: true,
+                    allowEscapeKey: false
+                })
 
-            const rs = await submitQuizzAnswered(answeredQuestions.map(x => {
-                return {
-                    questionId: x._id,
-                    answer: x.answer
+                const rs = await submitQuizzAnswered(answeredQuestions.map(x => {
+                    return {
+                        questionId: x._id,
+                        answer: x.answer
+                    }
+                }))
+                Swal.close()
+                toast.success(rs.message, { position: "bottom-right" })
+                console.log("🚀 ~ handleOnClickSubmit ~ rs:", rs)
+                replace(`/quizzresult`)
+            } catch (error) {
+                console.log("🚀 ~ QuizzTake ~ error:", error)
+                Swal.close()
+                if (error.message) {
+                    toast.success(error.message, { position: "bottom-right" })
                 }
-            }))
-            Swal.close()
-            toast.success(rs.message, { position: "bottom-right" })
-            console.log("🚀 ~ handleOnClickSubmit ~ rs:", rs)
-            replace(`/quizzresult`)
+            }
 
         }
     }, [submitQuizzAnswered, replace])
@@ -159,18 +163,4 @@ export default function QuizzTake(data: { quizzId: string }) {
             </div>
         </div>
     </>
-    return (
-        <ComponentCard title="Chi tiết quizz">
-            <div className="mx-auto w-full max-w-[630px]">
-                {/* <h3 className="mb-4 font-semibold text-gray-800 text-theme-xl dark:text-white/90 sm:text-2xl">
-                    Card Title Here
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 sm:text-base">
-                    Start putting content on grids or panels, you can also use different
-                    combinations of grids.Please check out the dashboard and other pages
-                </p> */}
-                álk;dja;slkjal;skdl;kjas
-            </div>
-        </ComponentCard>
-    )
 }

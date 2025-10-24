@@ -20,13 +20,19 @@ const QuizzTakeExample = (props: {
 
     useImperativeHandle(ref, () => ({
         getData: () => {
+            const listError: string[] = []
             for (let i = 0; i < answeredQuestions.length; i++) {
                 if (!answeredQuestions[i].answer) {
-                    // throw new Error(`Câu ${i + 1} chưa được trả lời`)
-                    toast.error(`Câu ${i + 1} chưa được trả lời`, { position: "bottom-right" })
-                    return null
+
+                    listError.push(`${i + 1}`)
                 }
             }
+            if (listError) {
+                toast.error(`Các câu ${listError.join(',')} chưa được trả lời!`, { position: "bottom-right" })
+                return null
+
+            }
+
             return answeredQuestions
         }
     }), [answeredQuestions])
