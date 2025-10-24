@@ -185,7 +185,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                         type="text"
                                         defaultValue={quizzName}
                                         // value={quizzName}
-                                        maxLength={20}
+                                        maxLength={300}
                                         minLength={1}
                                         onChange={event => setQuizzName(event.target.value)}
                                     />
