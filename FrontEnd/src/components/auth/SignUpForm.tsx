@@ -8,10 +8,10 @@ import React, { useState } from "react";
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import { validateEmail } from "@/utils/commom";
+import Swal from "sweetalert2";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
   const { push } = useRouter();
 
   const [formData, setFormData] = useState({
@@ -32,6 +32,30 @@ export default function SignUpForm() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+
+      if (formData.password !== formData.passwordcorrect) {
+        return toast.error('Mật khẩu xác nhận không khớp!', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
+      Swal.fire({
+        title: "Đang đăng ký",
+        html: "Vui lòng đợi trong giây lát!",
+        icon: "info",
+        showConfirmButton: false,
+        showDenyButton: false,
+        showCancelButton: false,
+        allowOutsideClick: false,
+        timerProgressBar: true,
+        allowEscapeKey: false
+      })
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
@@ -39,6 +63,7 @@ export default function SignUpForm() {
         },
         body: JSON.stringify(formData),
       });
+      Swal.close()
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -51,6 +76,7 @@ export default function SignUpForm() {
       toast.success("Đăng ký thành công");
       push('/signin')
     } catch (error: any) {
+      Swal.close()
       console.error("Registration Failed:", error);
       // toast({ title: "Registration Failed", description: error.message });
       toast.error(`Đăng ký thất bại : ${error.message}`, {
@@ -152,6 +178,7 @@ export default function SignUpForm() {
                     name="name"
                     maxLength={50}
                     minLength={2}
+                    required
                     placeholder="Nhập họ và tên"
                     value={formData.name} onChange={handleChange}
                   />
@@ -185,6 +212,9 @@ export default function SignUpForm() {
                       name="password"
                       type={showPassword ? "text" : "password"}
                       value={formData.password} onChange={handleChange}
+                      required
+                      maxLength={50}
+                      minLength={6}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -199,7 +229,7 @@ export default function SignUpForm() {
                   </div>
                 </div>
 
-                {/* <div>
+                <div>
                   <Label>
                     Nhập lại mật khẩu<span className="text-error-500">*</span>
                   </Label>
@@ -209,6 +239,9 @@ export default function SignUpForm() {
                       name="passwordcorrect"
                       type={showPassword ? "text" : "password"}
                       value={formData.passwordcorrect} onChange={handleChange}
+                      required
+                      maxLength={50}
+                      minLength={6}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -221,7 +254,7 @@ export default function SignUpForm() {
                       )}
                     </span>
                   </div>
-                </div> */}
+                </div>
                 {/* <!-- Checkbox --> */}
                 {/* <div className="flex items-center gap-3">
                   <Checkbox
