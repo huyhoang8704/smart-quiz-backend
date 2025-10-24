@@ -10,16 +10,10 @@ import { signOut, useSession } from "next-auth/react";
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { data, status } = useSession()
-  console.log("🚀 ~ UserDropdown ~ data:", data,status)
+  console.log("🚀 ~ UserDropdown ~ data:", data, status)
 
   useEffect(() => {
-    const klll = setTimeout(() => {
-      if (!data?.user && status === "unauthenticated") { signOut({ callbackUrl: '/signin' }) }
-    }, 10000)
-
-    return () => {
-      clearTimeout(klll)
-    }
+    if (!data?.user && status === "unauthenticated") { signOut({ callbackUrl: '/signin' }) }
   }, [data, status]);
 
 

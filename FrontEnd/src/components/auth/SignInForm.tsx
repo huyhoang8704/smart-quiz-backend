@@ -18,14 +18,14 @@ export default function SignInForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-  const { status } = useSession()
+  const { status, update } = useSession()
   console.log("🚀 ~ SignInForm ~ status:", status)
 
   useEffect(() => {
     if (status === "authenticated") {
-      // router.replace('/')
+      window.location.href = "/"
     }
-  }, [status,router])
+  }, [status, router])
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -60,7 +60,7 @@ export default function SignInForm() {
         });
       } else {
         Swal.close()
-        router.push("/"); // Redirect to the dashboard on success
+        window.location.href = "/"
       }
     } catch (err) {
       console.log("🚀 ~ handleSubmit ~ err:", err)
