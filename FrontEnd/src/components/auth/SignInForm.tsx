@@ -6,10 +6,10 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import { validateEmail } from "@/utils/commom";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
@@ -18,6 +18,14 @@ export default function SignInForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const { status } = useSession()
+  console.log("🚀 ~ SignInForm ~ status:", status)
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      // router.replace('/')
+    }
+  }, [status,router])
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,6 +48,7 @@ export default function SignInForm() {
         redirect: false, // Prevents automatic redirect on successful login
         email,
         password,
+        redirectTo: "/"
       });
 
       if (result?.error) {
