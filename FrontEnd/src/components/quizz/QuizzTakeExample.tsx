@@ -27,7 +27,7 @@ const QuizzTakeExample = (props: {
                     listError.push(`${i + 1}`)
                 }
             }
-            if (listError) {
+            if (listError.length > 0) {
                 toast.error(`Các câu ${listError.join(',')} chưa được trả lời!`, { position: "bottom-right" })
                 return null
 
