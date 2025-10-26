@@ -25,16 +25,24 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
     };
     const handleSave = async () => {
         // Handle save logic here
+        let errorMessage = "Tải lên tài liệu thất bại!"
+
+        if (!fileName) {
+            return toast.error("Vui lòng điền tên file", { position: "bottom-right" })
+        }
 
         if (!selectedFile) {
-            alert('Please select a file to upload.');
-            return;
+            return toast.error("Vui lòng chọn file", { position: "bottom-right" })
         }
 
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('title', fileName);
         formData.append('processedContent', desc);
+
+
+
+
         Swal.fire({
             title: "Đang xử lý",
             html: "Vui lòng đợi trong giây lát!",
@@ -49,12 +57,16 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
         const rs = await axiosInstance(`/api/materials/upload`, {
             method: "POST",
             data: formData
-        }).catch(() => {
+        }).catch((e) => {
+            console.log("🚀 ~ handleSave ~ e:", e)
             Swal.close()
-
+            if (e?.response?.data?.error) {
+                errorMessage = e?.response?.data?.error
+            }
         })
         Swal.close()
-        if (rs.data) {
+        console.log("🚀 ~ handleSave ~ rs:", rs)
+        if (rs?.data) {
             toast.success("Tải lên tài liệu thành công!", {
                 position: "bottom-right",
                 autoClose: 5000,
@@ -71,13 +83,18 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
             closeModal();
             props.onSuccess?.()
         } else {
-            toast.error("Tải lên tài liệu thất bại!", { position: "bottom-right" })
+            toast.error(errorMessage, { position: "bottom-right" })
         }
         // rs.statusText
         // closeModal();
     };
     return <>
-        <Button size="sm" variant="primary" endIcon={<BoxIcon />} onClick={openModal}>
+        <Button size="sm" variant="primary" endIcon={<BoxIcon />} onClick={() => {
+            setFileName("")
+            setDesc("")
+            setSelectedFile(null)
+            openModal()
+        }}>
             Thêm tài liệu
         </Button>
 
@@ -100,16 +117,19 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
 
                             <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-1">
                                 <div>
-                                    <Label>Tên file</Label>
+                                    <Label>Tên file <span className="text-error-500">*</span>{" "}</Label>
                                     <Input
                                         type="text"
                                         defaultValue={fileName}
+                                        required
+                                        minLength={1}
+                                        maxLength={50}
                                         onChange={event => setFileName(event.target.value)}
                                     />
                                 </div>
 
                                 <div>
-                                    <Label>Chọn file</Label>
+                                    <Label>Chọn file <span className="text-error-500">*</span>{" "}</Label>
                                     <FileInput
                                         onChange={handleFileChange}
                                     />
@@ -120,6 +140,7 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
                                     <TextArea
                                         value={desc}
                                         onChange={(value) => setDesc(value)}
+                                        className="text-base font-medium text-gray-800 dark:text-white/90"
                                         rows={6}
                                     />
                                 </div>
