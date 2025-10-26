@@ -298,7 +298,7 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *             mixedDifficulty:
  *               summary: Single Material - Mixed Question Types
  *               value:
- *                 materialId: "64fa0c1e23abc1234def5679"
+ *                 materialIds: ["64fa0c1e23abc1234def5679"]
  *                 settings:
  *                   questionConfigs:
  *                     - type: "mcq"
@@ -316,7 +316,7 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *             basicConfiguration:
  *               summary: Basic Single Material Configuration
  *               value:
- *                 materialId: "64fa0c1e23abc1234def5679"
+ *                 materialIds: ["64fa0c1e23abc1234def5679"]
  *                 settings:
  *                   questionConfigs:
  *                     - type: "mcq"
@@ -325,7 +325,7 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *             advancedConfiguration:
  *               summary: Advanced Multi-Type Configuration
  *               value:
- *                 materialId: "64fa0c1e23abc1234def5679"
+ *                 materialIds: ["64fa0c1e23abc1234def5679"]
  *                 settings:
  *                   questionConfigs:
  *                     - type: "mcq"
