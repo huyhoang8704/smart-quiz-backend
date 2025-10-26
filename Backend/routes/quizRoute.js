@@ -138,7 +138,7 @@ router.post("/", auth, quizController.createQuiz);
  *       404:
  *         description: Quiz not found
  */
-router.get("/:id", quizController.getQuizById);
+router.get("/:id", auth, quizController.getQuizById);
 
 /**
  * @swagger
@@ -188,6 +188,7 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *       Generate intelligent quizzes from uploaded materials using Google Gemini AI.
  *
  *       ## Key Features:
+ *       - **Multiple Materials**: Generate quiz from 1-5 materials (max 50MB total)
  *       - **Detailed Configuration**: Specify exact count and difficulty for each question type
  *       - **Mixed Question Types**: Combine MCQ, True/False, and Fill-in-the-blank in one quiz
  *       - **Individual Difficulty**: Set different difficulty levels for different question types
@@ -213,13 +214,19 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *           schema:
  *             type: object
  *             required:
- *               - materialId
  *               - settings
  *             properties:
  *               materialId:
  *                 type: string
- *                 description: ID of the material to generate quiz from
+ *                 description: ID of single material (use this OR materialIds)
  *                 example: "64fa0c1e23abc1234def5679"
+ *               materialIds:
+ *                 type: array
+ *                 description: Array of material IDs (1-5 materials, max 50MB total)
+ *                 maxItems: 5
+ *                 items:
+ *                   type: string
+ *                 example: ["64fa0c1e23abc1234def5679", "64fa0c1e23abc1234def567a"]
  *               settings:
  *                 type: object
  *                 required:
@@ -273,8 +280,23 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *                     description: Additional instructions for question generation
  *                     example: "Tập trung vào so sánh các thuật toán"
  *           examples:
+ *             multipleMaterials:
+ *               summary: Multiple Materials (Recommended for comprehensive quiz)
+ *               value:
+ *                 materialIds: ["64fa0c1e23abc1234def5679", "64fa0c1e23abc1234def567a", "64fa0c1e23abc1234def567b"]
+ *                 settings:
+ *                   questionConfigs:
+ *                     - type: "mcq"
+ *                       count: 10
+ *                       difficulty: "hard"
+ *                     - type: "truefalse"
+ *                       count: 5
+ *                       difficulty: "medium"
+ *                   customTitle: "Comprehensive AI & Machine Learning Quiz"
+ *                   focusAreas: ["deep learning", "neural networks", "practical applications"]
+ *                   customInstructions: "Create comparative questions between different materials"
  *             mixedDifficulty:
- *               summary: Mixed Question Types with Different Difficulties
+ *               summary: Single Material - Mixed Question Types
  *               value:
  *                 materialId: "64fa0c1e23abc1234def5679"
  *                 settings:
@@ -292,7 +314,7 @@ router.delete("/:id", auth, quizController.deleteQuiz);
  *                   focusAreas: ["machine learning", "deep learning", "neural networks"]
  *                   customInstructions: "Tập trung vào ứng dụng thực tế"
  *             basicConfiguration:
- *               summary: Basic Configuration
+ *               summary: Basic Single Material Configuration
  *               value:
  *                 materialId: "64fa0c1e23abc1234def5679"
  *                 settings:
@@ -562,32 +584,5 @@ router.post("/generate", auth, quizController.generateQuiz);
  */
 
 router.post("/:quizId/attempt", auth, quizController.attemptQuiz);
-
-/**
- * @swagger
- * /api/quizzes/debug/models:
- *   get:
- *     summary: Debug endpoint to check available Gemini models
- *     tags: [Quiz]
- *     responses:
- *       200:
- *         description: List of available models and their status
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 availableModels:
- *                   type: array
- *                   items:
- *                     type: string
- *                 testedModel:
- *                   type: string
- *                 testResult:
- *                   type: object
- */
-router.get("/debug/models", quizController.debugModels);
 
 module.exports = router;

@@ -42,6 +42,10 @@ const quizSchema = new mongoose.Schema(
       ref: "Material",
       required: false,
     },
+    materialIds: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Material",
+    }], // Support multiple materials
     title: { type: String, required: true },
     settings: {
       // Legacy fields for backward compatibility
@@ -57,6 +61,7 @@ const quizSchema = new mongoose.Schema(
       questionConfigs: [questionConfigSchema],
       focusAreas: [{ type: String }],
       customInstructions: { type: String },
+      materialsCount: { type: Number }, // Number of materials used
       note: { type: String }, // For system messages like fallback info
     },
     questions: [questionSchema],
