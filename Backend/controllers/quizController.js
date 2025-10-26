@@ -313,11 +313,20 @@ async function getAvailableModel() {
 // Helper function to generate quiz using text content with detailed settings
 async function generateQuizWithText({
   material,
+  materials,
   ownerId,
   materialId,
+  materialIds,
   title,
   settings,
 }) {
+  // Support both single material and multiple materials
+  const materialsList = materials || (material ? [material] : []);
+
+  if (materialsList.length === 0) {
+    throw new Error("No materials provided for quiz generation");
+  }
+
   // Parse question configurations from settings
   const questionConfigs = settings.questionConfigs || [
     { type: "mcq", count: 3, difficulty: "medium" },
@@ -332,8 +341,15 @@ async function generateQuizWithText({
   const customInstructions = settings.customInstructions || "";
 
   const systemPrompt = `
-Bạn là trợ lý tạo đề trắc nghiệm chuyên nghiệp. Tạo câu hỏi dựa vào thông tin tài liệu được cung cấp.
+Bạn là trợ lý tạo đề trắc nghiệm chuyên nghiệp. Tạo câu hỏi dựa vào thông tin từ ${
+    materialsList.length
+  } tài liệu được cung cấp.
 Tạo câu hỏi chất lượng cao, phù hợp với yêu cầu cụ thể của người dùng về từng loại câu hỏi.
+${
+  materialsList.length > 1
+    ? "Kết hợp nội dung từ tất cả các tài liệu để tạo câu hỏi đa dạng và toàn diện."
+    : ""
+}
 Không lộ đáp án trong phần câu hỏi. Trả về JSON đúng định dạng.`;
 
   // Build detailed question requirements
@@ -369,17 +385,32 @@ Không lộ đáp án trong phần câu hỏi. Trả về JSON đúng định d�
 - Tiêu đề yêu cầu: "${settings.customTitle}"`
     : "";
 
+  // Build materials content text
+  const materialsContent = materialsList
+    .map((mat, index) => {
+      const prefix =
+        materialsList.length > 1
+          ? `\n\n=== TÀI LIỆU ${index + 1}: "${mat.title}" ===`
+          : "";
+      return `${prefix}
+- Loại: ${mat.type}
+- Nội dung: "${mat.processedContent || "Không có nội dung được xử lý"}"`;
+    })
+    .join("\n");
+
   const userPrompt = `
-Tạo quiz với:
-- Tài liệu: "${material.title}"
-- Loại: ${material.type}
-- Nội dung có sẵn: "${
-    material.processedContent || "Không có nội dung được xử lý"
-  }"
+Tạo quiz từ ${materialsList.length} tài liệu sau:
+${materialsContent}
+
 - Tổng số câu hỏi: ${totalQuestions}
 - Cấu hình chi tiết: ${questionRequirements}${focusAreasText}${customInstructionsText}${customTitleText}
 
 Yêu cầu chi tiết:
+${
+  materialsList.length > 1
+    ? "- Kết hợp kiến thức từ TẤT CẢ các tài liệu để tạo câu hỏi đa dạng và toàn diện\n- Có thể tạo câu hỏi so sánh hoặc tổng hợp kiến thức từ nhiều tài liệu\n"
+    : ""
+}
 - Tạo chính xác số lượng câu hỏi theo từng loại đã chỉ định
 - Đảm bảo mức độ khó phù hợp cho từng loại câu hỏi:
   + MCQ (trắc nghiệm): tạo 3-4 lựa chọn hợp lý, 1 đáp án chính xác
@@ -473,7 +504,8 @@ Yêu cầu chi tiết:
 
     // Ensure required fields are set
     quizData.ownerId = ownerId;
-    quizData.materialId = materialId;
+    quizData.materialId = materialId; // For backward compatibility
+    quizData.materialIds = materialIds; // Store all material IDs if multiple
 
     // Override title with customTitle if provided
     if (settings.customTitle) {
@@ -486,6 +518,7 @@ Yêu cầu chi tiết:
       questionConfigs: questionConfigs,
       focusAreas: focusAreas,
       customInstructions: customInstructions,
+      materialsCount: materialsList.length, // Add count of materials used
     };
     return quizData;
   } catch (error) {
@@ -510,11 +543,28 @@ Yêu cầu chi tiết:
 // Generate quiz from material using Gemini AI with detailed settings
 const generateQuiz = async (req, res) => {
   try {
-    const { materialId, settings } = req.body;
+    const { materialIds, settings } = req.body;
+
+    // Support both single materialId and multiple materialIds
+    let materialIdsList = [];
+    if (materialIds && Array.isArray(materialIds)) {
+      materialIdsList = materialIds;
+    }
 
     // Validate required fields
-    if (!materialId) {
-      return res.status(400).json({ error: "Material ID is required" });
+    if (!materialIdsList || materialIdsList.length === 0) {
+      return res.status(400).json({
+        error: "At least one material ID is required",
+        hint: "Use 'materialId' for single material or 'materialIds' array for multiple materials",
+      });
+    }
+
+    // Validate material limits
+    if (materialIdsList.length > 5) {
+      return res.status(400).json({
+        error: "Maximum 5 materials allowed per quiz generation",
+        provided: materialIdsList.length,
+      });
     }
 
     if (!settings || !settings.questionConfigs) {
@@ -563,32 +613,66 @@ const generateQuiz = async (req, res) => {
       return res.status(500).json({ error: "Gemini API key not configured" });
     }
 
-    const material = await Material.findById(materialId);
-    if (!material) {
-      return res.status(404).json({ error: "Material not found" });
+    // Fetch all materials
+    const materials = await Material.find({ _id: { $in: materialIdsList } });
+
+    if (materials.length === 0) {
+      return res.status(404).json({ error: "No materials found" });
     }
 
-    // Check if user owns the material or has permission
-    if (
-      material.ownerId.toString() !== req.user.id &&
-      req.user.role !== "admin"
-    ) {
-      return res
-        .status(403)
-        .json({ error: "Not authorized to use this material" });
+    if (materials.length !== materialIdsList.length) {
+      return res.status(404).json({
+        error: "Some materials not found",
+        requested: materialIdsList.length,
+        found: materials.length,
+      });
     }
 
-    const title = settings.customTitle || `Quiz for ${material.title}`;
+    // Check file size limit (50MB total)
+    let totalSize = 0;
+    const MAX_TOTAL_SIZE = 50 * 1024 * 1024; // 50MB in bytes
+
+    for (const material of materials) {
+      // Check if user owns the material or has permission
+      if (
+        material.ownerId.toString() !== req.user.id &&
+        req.user.role !== "admin"
+      ) {
+        return res.status(403).json({
+          error: `Not authorized to use material: ${material.title}`,
+          materialId: material._id,
+        });
+      }
+
+      // Estimate file size (this is approximate, you may need actual file size from storage)
+      // For now, we'll use processedContent length as proxy
+      if (material.processedContent) {
+        totalSize += material.processedContent.length;
+      }
+    }
+
+    if (totalSize > MAX_TOTAL_SIZE) {
+      return res.status(400).json({
+        error: "Total materials size exceeds 50MB limit",
+        totalSize: `${(totalSize / 1024 / 1024).toFixed(2)}MB`,
+        limit: "50MB",
+      });
+    }
+
+    // Combine material titles for quiz title
+    const materialTitles = materials.map((m) => m.title).join(", ");
+    const title = settings.customTitle || `Quiz from: ${materialTitles}`;
 
     console.log("Question configurations:", settings.questionConfigs);
     console.log("Focus areas:", settings.focusAreas);
+    console.log("Number of materials:", materials.length);
 
     // Try to generate quiz with Gemini AI using detailed settings
     try {
       const quizData = await generateQuizWithText({
-        material,
+        materials, // Pass array of materials instead of single material
         ownerId: req.user.id,
-        materialId,
+        materialIds: materialIdsList,
         title,
         settings,
       });
@@ -596,7 +680,8 @@ const generateQuiz = async (req, res) => {
       // Create quiz in database
       const quiz = await Quiz.create({
         ownerId: req.user.id,
-        materialId,
+        materialId: materialIdsList[0], // Primary material ID for backward compatibility
+        materialIds: materialIdsList, // Store all material IDs
         title: quizData.title,
         settings: quizData.settings,
         questions: quizData.questions,
@@ -769,11 +854,13 @@ const deleteQuiz = async (req, res) => {
 const attemptQuiz = async (req, res) => {
   try {
     const quizId = req.params.quizId;
-    const answers  = req.body;
+    const answers = req.body;
     const studentId = req.user.id;
 
     if (!answers || !Array.isArray(answers)) {
-      return res.status(400).json({ message: "Danh sách câu trả lời không hợp lệ." });
+      return res
+        .status(400)
+        .json({ message: "Danh sách câu trả lời không hợp lệ." });
     }
 
     if (!quizId) {
@@ -850,50 +937,9 @@ const attemptQuiz = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Lỗi khi chấm quiz:", error);
-    res.status(500).json({ message: "Lỗi server khi chấm quiz.", error: error.message });
-  }
-};
-
-// Debug endpoint to check available models
-const debugModels = async (req, res) => {
-  try {
-    const {
-      listAvailableModels,
-      getBestAvailableModel,
-      testModel,
-    } = require("../utils/geminiUtils");
-
-    console.log("Starting model debug check...");
-
-    // List all available models
-    const availableModels = await listAvailableModels();
-    console.log("Available models:", availableModels);
-
-    // Get best available model
-    const bestModel = await getBestAvailableModel();
-    console.log("Best available model:", bestModel);
-
-    // Test the best model
-    let testResult = null;
-    if (bestModel) {
-      testResult = await testModel(bestModel);
-      console.log("Test result:", testResult);
-    }
-
-    res.json({
-      success: true,
-      availableModels,
-      bestModel,
-      testResult,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error("Debug models error:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      stack: error.stack,
-    });
+    res
+      .status(500)
+      .json({ message: "Lỗi server khi chấm quiz.", error: error.message });
   }
 };
 
@@ -904,5 +950,4 @@ module.exports = {
   getMyQuizzes,
   deleteQuiz,
   attemptQuiz,
-  debugModels,
 };
