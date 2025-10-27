@@ -12,12 +12,15 @@ import { toast } from "react-toastify";
 import ComponentCard from "../common/ComponentCard";
 import QuestionConfigs from "./QuestionConfigs";
 import TextArea from "../form/input/TextArea";
+import ReactSelect from 'react-select';
 import CreatableSelect from 'react-select/creatable';
+import makeAnimated from 'react-select/animated';
 import Swal from 'sweetalert2';
 import QuizzReview from "./QuizzReview";
 import { QuizzDataType, RequestCreateQuizz } from "@/utils/types";
 import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 
+const animatedComponents = makeAnimated();
 
 const getListData = async () => {
     const rs = await axiosInstance(`/api/materials`, {
@@ -64,7 +67,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
 
     const [quizzName, setQuizzName] = useState("")
     const [focusAreas, setFocusAreas] = useState<string[]>([])
-    const [selectedFile, setSelectedFile] = useState<string>()
+    const [selectedFile, setSelectedFile] = useState<string[]>()
     const [customInstructions, setCustomInstructions] = useState<string>("")
     const [inProcess, setInProcess] = useState(false)
     const [listMarterials, setListMarterials] = useState<{
@@ -82,17 +85,19 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
     const quizzConfigRef = useRef<any>(null)
 
     const handleSave = useCallback(async () => {
-        if (!selectedFile) {
-            return toast.error("Vui lòng chọn tài liệu", { position: "bottom-right" })
-        }
+
         if (!quizzName) {
             return toast.error("Vui lòng điền tên quizz", { position: "bottom-right" })
+        }
+
+        if (!selectedFile || selectedFile.length === 0) {
+            return toast.error("Vui lòng chọn tài liệu", { position: "bottom-right" })
         }
 
         const questionConfigs: RequestCreateQuizz['settings']['questionConfigs'] = quizzConfigRef.current?.getSettingsConfig()
 
         const dataRequest: RequestCreateQuizz = {
-            "materialId": selectedFile,
+            "materialIds": selectedFile,
             settings: {
                 questionConfigs: questionConfigs.filter(x => x.count !== 0),
                 customTitle: quizzName,
@@ -193,7 +198,25 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                 <div>
                                     <Label>Chọn tài liệu</Label>
                                     <div className="relative">
-                                        <Select
+                                        <ReactSelect
+                                            closeMenuOnSelect={false}
+                                            components={animatedComponents}
+                                            defaultValue={selectedFile}
+                                            isMulti
+                                            options={listMarterials.map(x => {
+                                                return {
+                                                    label: x.title,
+                                                    value: x._id
+                                                }
+                                            })}
+                                            placeholder="Chọn tài liệu"
+
+                                            onChange={(value) => {
+                                                // console.log("🚀 ~ CreateQuizzButton ~ value:", value)
+                                                setSelectedFile(value.map(x => x.value))
+                                            }}
+                                        />
+                                        {/* <Select
                                             options={listMarterials.map(x => {
                                                 return {
                                                     label: x.title,
@@ -208,7 +231,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                         />
                                         <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
                                             <ChevronDownIcon />
-                                        </span>
+                                        </span> */}
                                     </div>
                                 </div>
 
@@ -234,6 +257,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                 <div>
                                     <Label>Mô tả chi tiết thêm</Label>
                                     <TextArea
+                                        placeholder="Nhập thêm mô tả cho bài quizz"
                                         value={customInstructions}
                                         onChange={(value) => setCustomInstructions(value)}
                                         className="text-base font-medium text-gray-800 dark:text-white/90"

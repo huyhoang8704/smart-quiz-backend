@@ -30,7 +30,7 @@ export type QuizzDataType = {
 }
 
 export type RequestCreateQuizz = {
-    materialId: string
+    materialIds: string[]
     settings: {
         questionConfigs: Array<{
             type: "mcq" | "truefalse" | "fillblank"

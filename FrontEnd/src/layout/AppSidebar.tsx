@@ -68,7 +68,7 @@ const navItems: NavItem[] = [
 const navItemsTeacher: NavItem[] = [
   {
     icon: <GridIcon />,
-    name: "Quản lý",
+    name: "Quản lý quizz",
     path: "/",
   },
   // {
