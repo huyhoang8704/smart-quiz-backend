@@ -5,20 +5,22 @@ import 'react-responsive-modal/styles.css';
 
 import ComponentCard from "../common/ComponentCard";
 
-import axiosInstance from "@/utils/axios";
+
 import QuizzReview from "./QuizzReview";
 import { DIFFICULTY_NAME, QUIZZ_TYPE_NAME } from "@/utils/enum";
+import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 
 
 
 export default function QuizzDetail(data: { quizzId: string }) {
+    const { axiosInstance, status } = useAxiosAuth()
     const getQuizzDetail = useCallback(async (id: string) => {
         const rs = await axiosInstance(`/api/quizzes/${id}`, {
             method: "GET",
         })
         console.log(rs.data)
         return rs.data
-    }, [])
+    }, [axiosInstance])
 
     const [quizzData, setQuizzData] = useState<{
         settings: {
@@ -65,12 +67,13 @@ export default function QuizzDetail(data: { quizzId: string }) {
     >()
 
     useEffect(() => {
-        getQuizzDetail(data.quizzId).then(rs => {
-            console.log("🚀 ~ QuizzDetail ~ rs:", rs)
-            setQuizzData(rs)
+        if (status === "authenticated")
+            getQuizzDetail(data.quizzId).then(rs => {
+                console.log("🚀 ~ QuizzDetail ~ rs:", rs)
+                setQuizzData(rs)
 
-        })
-    }, [data.quizzId])
+            })
+    }, [data.quizzId, getQuizzDetail, status])
 
     return <>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
