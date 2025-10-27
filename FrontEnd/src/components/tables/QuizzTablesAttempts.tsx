@@ -62,7 +62,7 @@ export default function QuizzTablesAttempts() {
         console.log("🚀 ~ QuizzTables ~ rrr:", rrr)
         x[i].quizzAttemptsCount = rrr.data.length
       }
-      setTableData(x)
+      setTableData(x.filter(y => y.quizzAttemptsCount > 0))
       setLoading(false)
     }).catch(e => {
       console.log("🚀 ~ QuizzTablesAttempts ~ e:", e)
