@@ -35,6 +35,9 @@ const QuizzTakeExample = (props: {
             }
 
             return answeredQuestions
+        },
+        getDataForce: () => {
+            return answeredQuestions
         }
     }), [answeredQuestions])
 

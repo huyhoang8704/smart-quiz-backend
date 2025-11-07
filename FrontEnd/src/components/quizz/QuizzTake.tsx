@@ -14,6 +14,7 @@ import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 // import { useConfirmRouteExit } from "@/hooks/useConfirmRouteExit";
 import useUnsavedChangesWarning from "@/hooks/useUnsavedChangesWarning";
+import CountdownTimer from "./CountdownTimer";
 
 
 
@@ -81,11 +82,48 @@ export default function QuizzTake(data: { quizzId: string }) {
     }
     >()
 
-    const quizzTakeExampleRef = useRef<{ getData: () => QuizzDataType['questions'] }>(null)
+    const quizzTakeExampleRef = useRef<{ getData: () => QuizzDataType['questions'], getDataForce: () => QuizzDataType['questions'] }>(null)
 
     const handleOnClickSubmit = useCallback(async () => {
         const answeredQuestions = quizzTakeExampleRef.current?.getData()
         console.log("🚀 ~ handleOnClickSubmit ~ answeredQuestions:", answeredQuestions)
+        if (answeredQuestions) {
+            try {
+                Swal.fire({
+                    title: "Đang nộp bài...",
+                    html: "Vui lòng đợi trong giây lát!",
+                    icon: "info",
+                    showConfirmButton: false,
+                    showDenyButton: false,
+                    showCancelButton: false,
+                    allowOutsideClick: false,
+                    timerProgressBar: true,
+                    allowEscapeKey: false
+                })
+
+                const rs = await submitQuizzAnswered(answeredQuestions.map(x => {
+                    return {
+                        questionId: x._id,
+                        answer: x.answer
+                    }
+                }))
+                Swal.close()
+                toast.success(rs.message, { position: "bottom-right" })
+                console.log("🚀 ~ handleOnClickSubmit ~ rs:", rs)
+                replace(`/quizzresult`)
+            } catch (error) {
+                console.log("🚀 ~ QuizzTake ~ error:", error)
+                Swal.close()
+                if (error.message) {
+                    toast.success(error.message, { position: "bottom-right" })
+                }
+            }
+
+        }
+    }, [submitQuizzAnswered, replace])
+
+    const handleOnClickSubmitAuto = useCallback(async () => {
+        const answeredQuestions = quizzTakeExampleRef.current?.getDataForce()
         if (answeredQuestions) {
             try {
                 Swal.fire({
@@ -142,7 +180,6 @@ export default function QuizzTake(data: { quizzId: string }) {
                 Làm bài quizz
             </h3>
 
-
             <div className="space-y-6">
                 <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
                     <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -159,6 +196,7 @@ export default function QuizzTake(data: { quizzId: string }) {
 
                             </div>
                         </div>
+                        <CountdownTimer onComplete={handleOnClickSubmitAuto} />
 
                     </div>
                 </div>
