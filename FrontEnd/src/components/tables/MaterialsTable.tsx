@@ -188,7 +188,27 @@ export default function MaterialsTable() {
               Tải
             </Button> */}
             <Button size="sm" variant="primary" className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={() => {
-              deleteFile(data)
+
+              Swal.fire({
+                title: "Bạn có chắc muốn xoá?",
+                html: "Thao tác này không thể hoàn tác",
+                icon: "warning",
+                showConfirmButton: true,
+                showDenyButton: true,
+                showCancelButton: false,
+                allowOutsideClick: false,
+                timerProgressBar: false,
+                allowEscapeKey: false,
+                confirmButtonText: 'Xác nhận',
+                denyButtonText: 'Huỷ',
+
+
+              }).then(async (result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed) {
+                  await deleteFile(data)
+                }
+              })
             }}>
               Xoá
             </Button>
