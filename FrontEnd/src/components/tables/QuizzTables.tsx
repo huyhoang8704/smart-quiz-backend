@@ -145,30 +145,50 @@ export default function QuizzTables() {
 
             <Button size="sm" variant="primary" className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={async () => {
               Swal.fire({
-                title: "Đang xử lý",
-                html: "Vui lòng đợi trong giây lát!",
-                icon: "info",
-                showConfirmButton: false,
-                showDenyButton: false,
+                title: "Bạn có chắc muốn xoá?",
+                html: "Thao tác này không thể hoàn tác",
+                icon: "warning",
+                showConfirmButton: true,
+                showDenyButton: true,
                 showCancelButton: false,
                 allowOutsideClick: false,
-                timerProgressBar: true,
-                allowEscapeKey: false
+                timerProgressBar: false,
+                allowEscapeKey: false,
+                confirmButtonText: 'Xác nhận',
+                denyButtonText: 'Huỷ',
+
+
+              }).then(async (result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed) {
+                  Swal.fire({
+                    title: "Đang xử lý",
+                    html: "Vui lòng đợi trong giây lát!",
+                    icon: "info",
+                    showConfirmButton: false,
+                    showDenyButton: false,
+                    showCancelButton: false,
+                    allowOutsideClick: false,
+                    timerProgressBar: true,
+                    allowEscapeKey: false
+                  })
+                  const rs = await deleteQuizz(data)
+
+
+                  Swal.close()
+                  if (rs?.message === "Quiz deleted successfully") {
+                    toast.success("Xoá quizz thành công!", {
+                      position: "bottom-right",
+                    })
+                    refreshData()
+                  } else {
+                    toast.error("Xoá quizz thất bại!", {
+                      position: "bottom-right",
+                    })
+                  }
+                }
               })
-              const rs = await deleteQuizz(data)
 
-
-              Swal.close()
-              if (rs?.message === "Quiz deleted successfully") {
-                toast.success("Xoá quizz thành công!", {
-                  position: "bottom-right",
-                })
-                refreshData()
-              } else {
-                toast.error("Xoá quizz thất bại!", {
-                  position: "bottom-right",
-                })
-              }
             }}>
               Xoá
             </Button>

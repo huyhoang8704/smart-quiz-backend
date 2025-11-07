@@ -11,13 +11,16 @@ import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { useAxiosAuth } from "@/hooks/useAxiosAuth";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
+// import { useConfirmRouteExit } from "@/hooks/useConfirmRouteExit";
+import useUnsavedChangesWarning from "@/hooks/useUnsavedChangesWarning";
 
 
 
 
 export default function QuizzTake(data: { quizzId: string }) {
     const { replace } = useRouter()
-    const { axiosInstance } = useAxiosAuth()
+    const { axiosInstance, status } = useAxiosAuth()
     const getQuizzDetail = useCallback(async (id: string) => {
         const rs = await axiosInstance(`/api/quizzes/${id}`, {
             method: "GET",
@@ -119,11 +122,19 @@ export default function QuizzTake(data: { quizzId: string }) {
     }, [submitQuizzAnswered, replace])
 
     useEffect(() => {
-        getQuizzDetail(data.quizzId).then(rs => {
-            console.log("🚀 ~ QuizzDetail ~ rs:", rs)
-            setQuizzData(rs)
-        })
-    }, [data.quizzId, getQuizzDetail])
+        if (status === "authenticated") {
+            getQuizzDetail(data.quizzId).then(rs => {
+                console.log("🚀 ~ QuizzDetail ~ rs:", rs)
+                setQuizzData(rs)
+            })
+
+        }
+    }, [data.quizzId, getQuizzDetail, status])
+
+
+    // useBeforeUnload(true)
+    useUnsavedChangesWarning(true, useRef('Rời khỏi trang bạn sẽ mất dữ liệu!').current);
+    // useConfirmRouteExit(true, "Rời khỏi trang bạn sẽ mất dữ liệu!")
 
     return <>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">

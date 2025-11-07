@@ -2,7 +2,7 @@
 import { QuizzDataType } from "@/utils/types";
 import ComponentCard from "../common/ComponentCard"
 import Radio from "../form/input/Radio"
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import Input from "../form/input/InputField";
 import { toast } from "react-toastify";
 
@@ -17,6 +17,7 @@ const QuizzTakeExample = (props: {
             answer: ""
         }
     }))
+
 
     useImperativeHandle(ref, () => ({
         getData: () => {
