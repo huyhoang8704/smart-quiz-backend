@@ -490,35 +490,55 @@ router.post("/generate", auth, quizController.generateQuiz);
  *         schema:
  *           type: string
  *           example: "68dbfa7eee1b12b6bce86575"
+ *
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: array
- *             description: Danh sách câu trả lời của sinh viên.
- *             items:
- *               type: object
- *               properties:
- *                 questionId:
- *                   type: string
- *                   description: ID của câu hỏi.
- *                   example: "68dbfa7eee1b12b6bce86579"
- *                 answer:
- *                   type: string
- *                   description: Câu trả lời của sinh viên.
- *                   example: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
+ *             type: object
+ *             required:
+ *               - timeSpent
+ *               - answers
+ *             properties:
+ *               timeSpent:
+ *                 type: number
+ *                 description: Tổng thời gian làm bài (giây).
+ *                 example: 620
+ *               answers:
+ *                 type: array
+ *                 description: Danh sách câu trả lời của sinh viên.
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - questionId
+ *                     - answer
+ *                   properties:
+ *                     questionId:
+ *                       type: string
+ *                       description: ID của câu hỏi.
+ *                       example: "68dbfa7eee1b12b6bce86579"
+ *                     timeSpent:
+ *                       type: number
+ *                       description: Thời gian sinh viên dành cho câu hỏi (giây).
+ *                       example: 30
+ *                     answer:
+ *                       type: string
+ *                       description: Câu trả lời của sinh viên.
+ *                       example: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
  *           example:
- *             - questionId: "68dbfa7eee1b12b6bce86579"
- *               answer: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
- *             - questionId: "68dbfa7eee1b12b6bce8657a"
- *               answer: "Độ nhạy cao của hệ thống đối với các điều kiện ban đầu, dẫn đến sai số tích lũy nhanh chóng."
- *             - questionId: "68dbfa7eee1b12b6bce8657b"
- *               answer: "Khả năng mở rộng mô hình để bao gồm nhiều biến hơn."
- *             - questionId: "68dbfa7eee1b12b6bce86583"
- *               answer: "mô hình hóa"
- *             - questionId: "68dbfa7eee1b12b6bce86587"
- *               answer: "xác thực"
+ *             timeSpent: 620
+ *             answers:
+ *               - questionId: "68dbfa7eee1b12b6bce86579"
+ *                 timeSpent: 40
+ *                 answer: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
+ *               - questionId: "68dbfa7eee1b12b6bce8657a"
+ *                 timeSpent: 50
+ *                 answer: "Độ nhạy cao của hệ thống đối với điều kiện ban đầu."
+ *               - questionId: "68dbfa7eee1b12b6bce8657b"
+ *                 timeSpent: 35
+ *                 answer: "Khả năng mở rộng mô hình."
+ *
  *     responses:
  *       201:
  *         description: "Làm quiz thành công"
@@ -544,10 +564,13 @@ router.post("/generate", auth, quizController.generateQuiz);
  *                   example: 15
  *                 correctCount:
  *                   type: integer
- *                   example: 5
+ *                   example: 6
  *                 score:
  *                   type: number
- *                   example: 33.33
+ *                   example: 40.0
+ *                 timeSpent:
+ *                   type: number
+ *                   example: 620
  *                 details:
  *                   type: array
  *                   items:
@@ -564,7 +587,7 @@ router.post("/generate", auth, quizController.generateQuiz);
  *                         example: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
  *                       userAnswer:
  *                         type: string
- *                         example: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
+ *                         example: "Mô hình rất nhạy cảm..."
  *                       isCorrect:
  *                         type: boolean
  *                         example: true
@@ -575,13 +598,15 @@ router.post("/generate", auth, quizController.generateQuiz);
  *                   type: string
  *                   format: date-time
  *                   example: "2025-10-19T11:30:00.432Z"
+ *
  *       400:
- *         description: "Thiếu dữ liệu hoặc danh sách câu trả lời không hợp lệ"
+ *         description: "Thiếu dữ liệu hoặc sai format request"
  *       404:
  *         description: "Không tìm thấy quiz"
  *       500:
  *         description: "Lỗi server khi chấm quiz"
  */
+
 
 router.post("/:quizId/attempt", auth, quizController.attemptQuiz);
 

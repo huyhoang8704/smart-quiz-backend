@@ -854,9 +854,15 @@ const deleteQuiz = async (req, res) => {
 const attemptQuiz = async (req, res) => {
   try {
     const quizId = req.params.quizId;
-    const answers = req.body;
+    const answers = req.body.answers;
+    const timeSpent = req.body.timeSpent;
     const studentId = req.user.id;
 
+    if (typeof timeSpent !== "number") {
+      return res.status(400).json({
+        message: "timeSpent phải là số (giây).",
+      });
+    }
     if (!answers || !Array.isArray(answers)) {
       return res
         .status(400)
@@ -920,6 +926,7 @@ const attemptQuiz = async (req, res) => {
       totalQuestions,
       correctAnswers: correctCount,
       details: resultDetails,
+      timeSpent,
     });
 
     // 4️⃣ Trả về kết quả cho client
@@ -934,6 +941,7 @@ const attemptQuiz = async (req, res) => {
       details: resultDetails,
       attemptId: attempt._id,
       createdAt: attempt.createdAt,
+      timeSpent,
     });
   } catch (error) {
     console.error("❌ Lỗi khi chấm quiz:", error);
