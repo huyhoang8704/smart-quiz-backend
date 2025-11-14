@@ -522,15 +522,21 @@ router.post("/generate", auth, quizController.generateQuiz);
  *                       type: number
  *                       description: Thời gian sinh viên dành cho câu hỏi (giây).
  *                       example: 30
+ *                     timeConfig:
+ *                       type: number
+ *                       description: Thời gian cấu hình cho câu hỏi (giây).
+ *                       example: 600
  *                     answer:
  *                       type: string
  *                       description: Câu trả lời của sinh viên.
  *                       example: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
  *           example:
  *             timeSpent: 620
+ * 
  *             answers:
  *               - questionId: "68dbfa7eee1b12b6bce86579"
  *                 timeSpent: 40
+ *                 timeConfig: 600
  *                 answer: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
  *               - questionId: "68dbfa7eee1b12b6bce8657a"
  *                 timeSpent: 50

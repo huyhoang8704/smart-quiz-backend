@@ -856,6 +856,7 @@ const attemptQuiz = async (req, res) => {
     const quizId = req.params.quizId;
     const answers = req.body.answers;
     const timeSpent = req.body.timeSpent;
+    const timeConfig = req.body.timeConfig || 0;
     const studentId = req.user.id;
 
     if (typeof timeSpent !== "number") {
@@ -927,6 +928,7 @@ const attemptQuiz = async (req, res) => {
       correctAnswers: correctCount,
       details: resultDetails,
       timeSpent,
+      timeConfig,
     });
 
     // 4️⃣ Trả về kết quả cho client
@@ -942,6 +944,7 @@ const attemptQuiz = async (req, res) => {
       attemptId: attempt._id,
       createdAt: attempt.createdAt,
       timeSpent,
+      timeConfig,
     });
   } catch (error) {
     console.error("❌ Lỗi khi chấm quiz:", error);

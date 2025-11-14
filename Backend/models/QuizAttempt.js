@@ -25,6 +25,11 @@ const quizAttemptSchema = new mongoose.Schema(
       },
     ],
     timeSpent: { type: Number, required: true },
+    timeConfig: {
+      type: Number,
+      required: false,
+      default: 0,
+    }
   },
   { timestamps: true }
 );
