@@ -5,6 +5,6 @@ services:
     build: .
     ports:
       - "4000:3000"
-    volumes:
-      - ../Backend:/app # Mount the host project directory to the container's /app
-      - /app/node_modules # Ensure node_modules inside the container is not overwritten by host
+    # volumes:
+    #   - ../Backend:/app # Mount the host project directory to the container's /app
+    #   - /app/node_modules # Ensure node_modules inside the container is not overwritten by host

@@ -68,7 +68,7 @@ const navItems: NavItem[] = [
 const navItemsTeacher: NavItem[] = [
   {
     icon: <GridIcon />,
-    name: "Quản lý quizz",
+    name: "Quản lý Quizz",
     path: "/",
   },
   // {
@@ -78,7 +78,7 @@ const navItemsTeacher: NavItem[] = [
   // },
   // {
   //   icon: <BoxCubeIcon />,
-  //   name: "Danh sách bài quizz",
+  //   name: "Danh sách bài Quizz",
   //   path: "/quizzs",
   // },
   {
@@ -113,7 +113,7 @@ const navItemsAdmin: NavItem[] = [
   },
   {
     icon: <BoxCubeIcon />,
-    name: "Danh sách bài quizz",
+    name: "Danh sách bài Quizz",
     path: "/quizzs",
   },
   {
@@ -144,7 +144,7 @@ const navItemsStudent: NavItem[] = [
   // },
   {
     icon: <BoxCubeIcon />,
-    name: "Danh sách bài quizz",
+    name: "Danh sách bài Quizz",
     path: "/quizzs",
   },
   {
