@@ -1,0 +1,12 @@
+{
+  "name": "smart-quiz-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "jest --runInBand"
+  },
+  "devDependencies": {
+    "jest": "^29.6.1"
+  }
+}
