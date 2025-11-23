@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const materialController = require("../controllers/materialController");
 const auth = require("../middleware/authMiddleware");
+const uploadFile = require("../middleware/uploadFile");
 
 /**
  * @swagger
@@ -115,7 +116,9 @@ const auth = require("../middleware/authMiddleware");
  *       500:
  *         description: Server error
  */
-router.post("/upload", auth, materialController.uploadMaterial);
+// router.post("/upload", auth, materialController.uploadMaterial);
+
+router.post("/upload", auth, uploadFile, materialController.uploadMaterial);
 
 /**
  * @swagger
