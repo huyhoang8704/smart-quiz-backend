@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const checkPasswordStrength = require('../utils/checkPasswordStrength');
 
 
 // Hàm tạo JWT
@@ -17,10 +18,12 @@ const registerStudent = async (req, res, next) => {
     try {
         const { name, email, password } = req.body;
         if (!name || !email || !password) return res.status(400).json({ error: 'Please provide name, email and password' });
+
         // Check email trùng
         const existing = await User.findOne({ email });
         if (existing) return res.status(400).json({ error: 'Email already registered' });
-
+        const passwordCheck = checkPasswordStrength(password);
+        if (!passwordCheck.valid) return res.status(400).json({ error: passwordCheck.message });
         // Tạo user với role student
         const user = await User.create({ name, email, password, role: 'student' });
         const token = signToken(user);
