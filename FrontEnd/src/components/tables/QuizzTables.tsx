@@ -124,7 +124,11 @@ export default function QuizzTables() {
   const columns: ConfigColumns[] = [
     { data: '_id', visible: false, },
     { data: 'title', title: "Tên quizz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
-    { data: 'settings.totalQuestions', title: "Tổng số câu hỏi", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
+    {
+      data: 'settings.totalQuestions', title: "Tổng số câu hỏi", className: "text-lg font-semibold text-gray-800 dark:text-white/90",
+      width: '200px',
+
+    },
     // { data: 'settings.difficulty', title: "Độ khó" },
     // { data: "quizzAttemptsCount", title: "Số bài quizz đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     {
@@ -133,6 +137,7 @@ export default function QuizzTables() {
       //   Tạo quizz mới
       // </Button>, // Default button HTML
       // render: () = '',
+      width: '350px',
       createdCell: function (cell, data, row) {
         hydrateRoot(
           cell,
@@ -246,6 +251,62 @@ export default function QuizzTables() {
               });
             }}>
               Làm bài
+            </Button>
+            {/* <button type="button" class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-2.5 focus:outline-none">Secondary</button> */}
+
+            <Button size="sm" variant="primary" className="bg-neutral-secondary-medium hover:bg-neutral-tertiary-medium hover:text-heading text-white font-bold py-2 px-4 rounded" onClick={async () => {
+              // push(`/quizzs/${data}/take`)
+
+              Swal.fire({
+                title: "Vui lòng nhập thời gian bạn muốn làm bài (phút)",
+                input: "number",
+                inputLabel: "Thời gian làm bài",
+
+                inputAttributes: {
+                  min: 1, // Optional: HTML5 min attribute for initial client-side validation
+                  step: 1 // Optional: HTML5 step attribute
+                },
+                inputPlaceholder: 'Nhập số phút',
+
+                showCancelButton: true,
+                cancelButtonText: "Huỷ",
+                confirmButtonText: "Xác nhận",
+                showLoaderOnConfirm: true,
+                preConfirm: async (login) => {
+                  console.log("🚀 ~ QuizzTables ~ login:", login)
+                  const params = new URLSearchParams();
+                  params.set("timeLimit", login);
+
+                  push(`/quizzs/${data}/take?${params.toString()}`);
+
+                  //             try {
+                  //               const githubUrl = `
+                  //   https://api.github.com/users/${login}
+                  // `;
+                  //               const response = await fetch(githubUrl);
+                  //               if (!response.ok) {
+                  //                 return Swal.showValidationMessage(`
+                  //     ${JSON.stringify(await response.json())}
+                  //   `);
+                  //               }
+                  //               return response.json();
+                  //             } catch (error) {
+                  //                (`
+                  //   Request failed: ${error}
+                  // `);
+                  //             }
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+              }).then((result) => {
+                // if (result.isConfirmed) {
+                //   Swal.fire({
+                //     title: `${result.value.login}'s avatar`,
+                //     imageUrl: result.value.avatar_url
+                //   });
+                // }
+              });
+            }}>
+              In
             </Button>
           </div>
         );
