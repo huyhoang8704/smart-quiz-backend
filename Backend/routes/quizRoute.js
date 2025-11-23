@@ -532,17 +532,13 @@ router.post("/generate", auth, quizController.generateQuiz);
  *                       example: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
  *           example:
  *             timeSpent: 620
- * 
+ *             timeConfig: 800
  *             answers:
  *               - questionId: "68dbfa7eee1b12b6bce86579"
- *                 timeSpent: 40
- *                 timeConfig: 600
  *                 answer: "Mô hình rất nhạy cảm với những thay đổi nhỏ của tham số đó."
  *               - questionId: "68dbfa7eee1b12b6bce8657a"
- *                 timeSpent: 50
  *                 answer: "Độ nhạy cao của hệ thống đối với điều kiện ban đầu."
  *               - questionId: "68dbfa7eee1b12b6bce8657b"
- *                 timeSpent: 35
  *                 answer: "Khả năng mở rộng mô hình."
  *
  *     responses:
