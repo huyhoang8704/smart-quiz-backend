@@ -35,13 +35,14 @@ export default function QuizzTake(data: { quizzId: string, timeLimit?: number })
         const rs = await axiosInstance(`/api/quizzes/${data.quizzId}/attempt`, {
             method: "POST",
             data: {
-                ...dataSubmit,
-                timeSpent: refCount.current ? refCount.current.getTimeTake() : 0
+                answers: dataSubmit,
+                timeSpent: refCount.current ? refCount.current.getTimeTake() : 0,
+                timeConfig: data.timeLimit ? data.timeLimit : 60
             }
         })
         console.log(rs.data)
         return rs.data
-    }, [data.quizzId, axiosInstance])
+    }, [data.quizzId, axiosInstance, data.timeLimit])
 
     const [quizzData, setQuizzData] = useState<{
         settings: {
