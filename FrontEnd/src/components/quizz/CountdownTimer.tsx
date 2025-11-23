@@ -1,7 +1,7 @@
 // CountdownTimer.jsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 
 // Thời gian ban đầu: 1 giờ (3600 giây)
 const INITIAL_SECONDS = 3600;
@@ -10,8 +10,10 @@ const INITIAL_SECONDS = 3600;
  * Component đếm ngược 1 giờ với design lấy cảm hứng từ TailAdmin
  * * @param {function} onComplete - Hàm callback được gọi khi đếm ngược kết thúc
  */
-const CountdownTimer = ({ onComplete }) => {
-    const [secondsLeft, setSecondsLeft] = useState(INITIAL_SECONDS);
+const CountdownTimer = forwardRef(({ onComplete, timeLimit }: {}, ref) => {
+    const limit = useMemo(() => timeLimit ? timeLimit * 60 : INITIAL_SECONDS, [timeLimit])
+
+    const [secondsLeft, setSecondsLeft] = useState(limit);
     const [isRunning, setIsRunning] = useState(true);
 
     // Sử dụng useCallback để đảm bảo hàm format không bị tạo lại không cần thiết
@@ -61,6 +63,13 @@ const CountdownTimer = ({ onComplete }) => {
         ${isCritical ? 'text-red-600 dark:text-red-400' : 'text-primary dark:text-white'}
     `;
 
+
+    useImperativeHandle(ref, () => ({
+        getTimeTake: () => {
+            return limit - secondsLeft;
+        },
+    }), [secondsLeft, limit]);
+
     return (
         <div className="flex flex-col items-center justify-center p-6 bg-white dark:bg-boxdark rounded-lg shadow-default border border-stroke dark:border-strokedark">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
@@ -90,6 +99,6 @@ const CountdownTimer = ({ onComplete }) => {
             </button>
         </div>
     );
-};
+})
 
 export default CountdownTimer;

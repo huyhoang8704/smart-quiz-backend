@@ -194,7 +194,56 @@ export default function QuizzTables() {
             </Button>
 
             <Button size="sm" variant="primary" className="bg-sky-400 hover:bg-sky-950 text-white font-bold py-2 px-4 rounded" onClick={async () => {
-              push(`/quizzs/${data}/take`)
+              // push(`/quizzs/${data}/take`)
+
+              Swal.fire({
+                title: "Vui lòng nhập thời gian bạn muốn làm bài (phút)",
+                input: "number",
+                inputLabel: "Thời gian làm bài",
+
+                inputAttributes: {
+                  min: 1, // Optional: HTML5 min attribute for initial client-side validation
+                  step: 1 // Optional: HTML5 step attribute
+                },
+                inputPlaceholder: 'Nhập số phút',
+
+                showCancelButton: true,
+                cancelButtonText: "Huỷ",
+                confirmButtonText: "Xác nhận",
+                showLoaderOnConfirm: true,
+                preConfirm: async (login) => {
+                  console.log("🚀 ~ QuizzTables ~ login:", login)
+                  const params = new URLSearchParams();
+                  params.set("timeLimit", login);
+
+                  push(`/quizzs/${data}/take?${params.toString()}`);
+
+                  //             try {
+                  //               const githubUrl = `
+                  //   https://api.github.com/users/${login}
+                  // `;
+                  //               const response = await fetch(githubUrl);
+                  //               if (!response.ok) {
+                  //                 return Swal.showValidationMessage(`
+                  //     ${JSON.stringify(await response.json())}
+                  //   `);
+                  //               }
+                  //               return response.json();
+                  //             } catch (error) {
+                  //                (`
+                  //   Request failed: ${error}
+                  // `);
+                  //             }
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+              }).then((result) => {
+                // if (result.isConfirmed) {
+                //   Swal.fire({
+                //     title: `${result.value.login}'s avatar`,
+                //     imageUrl: result.value.avatar_url
+                //   });
+                // }
+              });
             }}>
               Làm bài
             </Button>

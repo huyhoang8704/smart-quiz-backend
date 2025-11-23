@@ -10,9 +10,11 @@ export const metadata: Metadata = {
         "Làm quizz | Quản lý dự án phần mềm - Tạo Quizz",
 };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default async function BasicTables({ params }: any) {
-    const { id } = await params
+export default async function BasicTables({ params, searchParams }: any) {
+    const { id, } = await params
+    const { timeLimit } = await searchParams
+    console.log("🚀 ~ BasicTables ~ prams:", timeLimit)
     return <div>
-        <QuizzTake quizzId={id} />
+        <QuizzTake quizzId={id} timeLimit={timeLimit ? parseInt(timeLimit) : undefined} />
     </div>
 }

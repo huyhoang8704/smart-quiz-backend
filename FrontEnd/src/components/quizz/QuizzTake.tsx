@@ -19,9 +19,10 @@ import CountdownTimer from "./CountdownTimer";
 
 
 
-export default function QuizzTake(data: { quizzId: string }) {
+export default function QuizzTake(data: { quizzId: string, timeLimit?: number }) {
     const { replace } = useRouter()
     const { axiosInstance, status } = useAxiosAuth()
+    const refCount = useRef(null)
     const getQuizzDetail = useCallback(async (id: string) => {
         const rs = await axiosInstance(`/api/quizzes/${id}`, {
             method: "GET",
@@ -33,7 +34,10 @@ export default function QuizzTake(data: { quizzId: string }) {
     const submitQuizzAnswered = useCallback(async (dataSubmit: any) => {
         const rs = await axiosInstance(`/api/quizzes/${data.quizzId}/attempt`, {
             method: "POST",
-            data: dataSubmit
+            data: {
+                ...dataSubmit,
+                timeSpent: refCount.current ? refCount.current.getTimeTake() : 0
+            }
         })
         console.log(rs.data)
         return rs.data
@@ -144,6 +148,7 @@ export default function QuizzTake(data: { quizzId: string }) {
                         answer: x.answer
                     }
                 }))
+                console.log("🚀 ~ QuizzTake ~ rs:", rs)
                 Swal.close()
                 toast.success(rs.message, { position: "bottom-right" })
                 console.log("🚀 ~ handleOnClickSubmit ~ rs:", rs)
@@ -152,7 +157,7 @@ export default function QuizzTake(data: { quizzId: string }) {
                 console.log("🚀 ~ QuizzTake ~ error:", error)
                 Swal.close()
                 if (error.message) {
-                    toast.success(error.message, { position: "bottom-right" })
+                    toast.error(error.message, { position: "bottom-right" })
                 }
             }
 
@@ -196,7 +201,7 @@ export default function QuizzTake(data: { quizzId: string }) {
 
                             </div>
                         </div>
-                        <CountdownTimer onComplete={handleOnClickSubmitAuto} />
+                        <CountdownTimer ref={refCount} onComplete={handleOnClickSubmitAuto} timeLimit={data.timeLimit || 60} />
 
                     </div>
                 </div>

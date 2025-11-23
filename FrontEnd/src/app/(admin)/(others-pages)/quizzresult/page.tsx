@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function BasicTables() {
   return (
     <div>
-      <PageBreadcrumb pageTitle="Danh sách bài kiểm tra" />
+      <PageBreadcrumb pageTitle="Lịch sử làm Quiz" />
       <div className="space-y-6">
         <QuizzTablesAttempts />
         {/* <ComponentCard title="Danh sách các bài kiểm tra">
