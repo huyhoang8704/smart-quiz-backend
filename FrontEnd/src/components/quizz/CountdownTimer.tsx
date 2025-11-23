@@ -11,8 +11,8 @@ const INITIAL_SECONDS = 3600;
  * * @param {function} onComplete - Hàm callback được gọi khi đếm ngược kết thúc
  */
 const CountdownTimer = forwardRef(({ onComplete, timeLimit }: {}, ref) => {
-    // const limit = useMemo(() => timeLimit ? timeLimit * 60 : INITIAL_SECONDS, [timeLimit])
-    const limit = 10
+    const limit = useMemo(() => timeLimit ? timeLimit * 60 : INITIAL_SECONDS, [timeLimit])
+
     const [secondsLeft, setSecondsLeft] = useState(limit);
     const [isRunning, setIsRunning] = useState(true);
 
