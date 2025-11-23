@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const quizController = require("../controllers/quizController");
 const auth = require("../middleware/authMiddleware");
+const exportQuizPdf  = require("../controllers/quizExportController");
 
 /**
  * @swagger
@@ -611,5 +612,54 @@ router.post("/generate", auth, quizController.generateQuiz);
 
 
 router.post("/:quizId/attempt", auth, quizController.attemptQuiz);
+
+
+/**
+ * @swagger
+ * /api/quizzes/{id}/export:
+ *   get:
+ *     summary: Export quiz to PDF
+ *     description: |
+ *       Xuất quiz ra file PDF. Hỗ trợ hai chế độ:
+ *       - **answers=true**: xuất PDF kèm đáp án  
+ *       - **answers=false** hoặc không truyền: xuất PDF KHÔNG kèm đáp án
+ *
+ *     tags: [Quiz]
+ *
+ *     security:
+ *       - bearerAuth: []
+ *
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của quiz cần export.
+ *
+ *       - in: query
+ *         name: answers
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           example: false
+ *         description: Nếu true, PDF sẽ bao gồm đáp án.
+ *
+ *     responses:
+ *       200:
+ *         description: File PDF được tạo thành công.
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *
+ *       404:
+ *         description: Quiz not found
+ *
+ *       500:
+ *         description: Lỗi server
+ */
+router.get("/:id/export", exportQuizPdf.exportQuizPdf);
 
 module.exports = router;
