@@ -1,42 +1,14 @@
+// QuizzTables.tsx (Đã sửa lỗi Worker và Dynamic Imports)
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import dynamic from 'next/dynamic';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
-// const DataTable = dynamic(() => import('datatables.net-react'), { ssr: false });
-const DataTable = dynamic(
-  async () => {
-    import(`datatables.net-buttons-dt`);
-    const dtReact = import('datatables.net-react');
-    const dtNet = import(`datatables.net-dt`);
+// *** IMPORTS CSS (Đã bỏ comment) ***
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
-    // import(`datatables.net-buttons/js/buttons.colVis.mjs`);
-    // import(`datatables.net-buttons-dt`);
-    // import(`datatables.net-buttons-dt`);
-    // import(`datatables.net-buttons-dt`);
 
-    const [reactMod, dtNetMod] = await Promise.all([dtReact, dtNet]);
-
-    reactMod.default.use(dtNetMod.default);
-    return reactMod.default;
-  },
-  { ssr: false }
-);
-// import DataTable from 'datatables.net-react';
 import { ConfigColumns } from 'datatables.net-dt';
-// dynamic(() => import('datatables.net-buttons-dt'), { ssr: false })
-// import jszip from 'jszip';
-// import pdfmake from 'pdfmake';
-// import 'datatables.net-buttons-dt';
-// import 'datatables.net-buttons/js/buttons.colVis.mjs';
-// import 'datatables.net-buttons/js/buttons.html5.mjs';
-// import 'datatables.net-buttons/js/buttons.print.mjs';
-// import 'datatables.net-colreorder-dt';
-// import 'datatables.net-columncontrol-dt';
-
-// import 'datatables.net-searchbuilder-dt';
-// import 'datatables.net-select-dt';
-
-import axiosInstance from "@/utils/axios";
 import Button from "../ui/button/Button";
 
 import ComponentCard from "../common/ComponentCard";
@@ -48,19 +20,47 @@ import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 
 import { useAxiosAuth } from "@/hooks/useAxiosAuth";
+import { Modal } from "../ui/modal";
 
-// DataTablesCore.Buttons.jszip(jszip);
-// DataTablesCore.Buttons.pdfMake(pdfmake);
-// if (typeof window !== 'undefined') {
-
-//   // eslint-disable-next-line react-hooks/rules-of-hooks
-//   DataTable.use(DataTablesCore);
+// *** CẤU HÌNH WORKER (Đảm bảo chạy trên Client) ***
+const WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
+// if (typeof window !== 'undefined' && pdfjs) {
+//   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 // }
 
+// *** DYNAMIC IMPORTS ***
+const DataTable = dynamic(
+  async () => {
+    import(`datatables.net-buttons-dt`);
+    const dtReact = import('datatables.net-react');
+    const dtNet = import(`datatables.net-dt`);
+
+    const [reactMod, dtNetMod] = await Promise.all([dtReact, dtNet]);
+
+    reactMod.default.use(dtNetMod.default);
+    return reactMod.default;
+  },
+  { ssr: false }
+);
+const Viewer = dynamic(() =>
+  import('@react-pdf-viewer/core').then(mod => mod.Viewer),
+  { ssr: false }
+);
+
+const Worker = dynamic(() =>
+  import('@react-pdf-viewer/core').then(mod => mod.Worker),
+  { ssr: false }
+);
+
+const DefaultLayout = dynamic(() =>
+  import('@react-pdf-viewer/default-layout').then(mod => mod.DefaultLayout),
+  { ssr: false }
+);
+// *** END DYNAMIC IMPORTS ***
 
 
 export default function QuizzTables() {
-  const { axiosInstance: axiosAuth, status } = useAxiosAuth(); // <--- Lấy instance đã có token
+  const { axiosInstance: axiosAuth, status } = useAxiosAuth();
   const getListData = useCallback(async () => {
     const rs = await axiosAuth(`/api/quizzes`, {
       method: "GET",
@@ -120,6 +120,87 @@ export default function QuizzTables() {
       Swal.close()
     }
   }, [loading])
+  // State quản lý Preview Modal
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [currentFilename, setCurrentFilename] = useState("quizz-export.pdf");
+
+  // Hàm render DefaultLayout
+  const renderDefaultLayout = useCallback((props: any) => (
+    <DefaultLayout {...props} />
+  ), []);
+
+  // Hàm xử lý việc xuất/in quizz
+  const handlePrintQuizz = (quizzId: string) => {
+    // ... (Swal.fire logic giữ nguyên) ...
+    Swal.fire({
+      title: "Bạn có in quizz này không?",
+      input: "checkbox",
+      inputLabel: "Có đáp án",
+      inputAttributes: {},
+      showCancelButton: true,
+      cancelButtonText: "Huỷ",
+      confirmButtonText: "Xác nhận",
+      showLoaderOnConfirm: true,
+
+      preConfirm: async (login) => {
+        const withAnswers = login ? true : false;
+
+        return axiosAuth(`/api/quizzes/${quizzId}/export`, {
+          params: { answers: withAnswers },
+          responseType: 'arraybuffer'
+        }).then(response => {
+          // 1. Trích xuất tên file
+          const contentDisposition = response.headers['content-disposition'] as string;
+          const filenameMatch = contentDisposition && contentDisposition.match(/filename="([^"]+)"/i);
+          const filename = filenameMatch && filenameMatch[1] ? filenameMatch[1] : `quiz-${quizzId}.pdf`;
+
+          // 2. Tạo Blob
+          const blob = new Blob([response.data], { type: 'application/pdf' });
+
+          // 3. Cập nhật State và mở Preview
+          setPdfBlob(blob);
+          setCurrentFilename(filename);
+          setShowPreview(true);
+
+          return "success";
+        }).catch(error => {
+          console.error("Lỗi khi xuất quizz:", error);
+          toast.error("Xuất quizz thất bại!", { position: "bottom-right" });
+          return false;
+        });
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.close();
+      }
+    });
+  };
+
+
+  // Hàm đóng preview và giải phóng Blob
+  const handleClosePreview = useCallback(() => {
+    setShowPreview(false);
+    setPdfBlob(null);
+  }, []);
+
+  // Hàm tải xuống
+  const handleDownload = useCallback(() => {
+    if (pdfBlob) {
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', currentFilename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url); // Giải phóng URL tạm thời
+
+      handleClosePreview();
+    }
+  }, [pdfBlob, currentFilename, handleClosePreview]);
+
 
   const columns: ConfigColumns[] = [
     { data: '_id', visible: false, },
@@ -129,14 +210,9 @@ export default function QuizzTables() {
       width: '200px',
 
     },
-    // { data: 'settings.difficulty', title: "Độ khó" },
-    // { data: "quizzAttemptsCount", title: "Số bài quizz đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     {
-      data: '_id', // No data source for this column, we'll render it manually
-      // defaultContent: <Button size="sm" variant="primary" endIcon={<BoxIcon />}>
-      //   Tạo quizz mới
-      // </Button>, // Default button HTML
-      // render: () = '',
+      data: '_id',
+      // ... (width, className, orderable, searchable giữ nguyên) ...
       width: '350px',
       createdCell: function (cell, data, row) {
         hydrateRoot(
@@ -252,85 +328,38 @@ export default function QuizzTables() {
             }}>
               Làm bài
             </Button>
-            {/* <button type="button" class="text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium leading-5 rounded-full text-sm px-4 py-2.5 focus:outline-none">Secondary</button> */}
 
-            <Button size="sm" variant="primary" className="bg-neutral-secondary-medium hover:bg-neutral-tertiary-medium hover:text-heading text-white font-bold py-2 px-4 rounded" onClick={async () => {
-              // push(`/quizzs/${data}/take`)
-
-              Swal.fire({
-                title: "Vui lòng nhập thời gian bạn muốn làm bài (phút)",
-                input: "number",
-                inputLabel: "Thời gian làm bài",
-
-                inputAttributes: {
-                  min: 1, // Optional: HTML5 min attribute for initial client-side validation
-                  step: 1 // Optional: HTML5 step attribute
-                },
-                inputPlaceholder: 'Nhập số phút',
-
-                showCancelButton: true,
-                cancelButtonText: "Huỷ",
-                confirmButtonText: "Xác nhận",
-                showLoaderOnConfirm: true,
-                preConfirm: async (login) => {
-                  console.log("🚀 ~ QuizzTables ~ login:", login)
-                  const params = new URLSearchParams();
-                  params.set("timeLimit", login);
-
-                  push(`/quizzs/${data}/take?${params.toString()}`);
-
-                  //             try {
-                  //               const githubUrl = `
-                  //   https://api.github.com/users/${login}
-                  // `;
-                  //               const response = await fetch(githubUrl);
-                  //               if (!response.ok) {
-                  //                 return Swal.showValidationMessage(`
-                  //     ${JSON.stringify(await response.json())}
-                  //   `);
-                  //               }
-                  //               return response.json();
-                  //             } catch (error) {
-                  //                (`
-                  //   Request failed: ${error}
-                  // `);
-                  //             }
-                },
-                allowOutsideClick: () => !Swal.isLoading()
-              }).then((result) => {
-                // if (result.isConfirmed) {
-                //   Swal.fire({
-                //     title: `${result.value.login}'s avatar`,
-                //     imageUrl: result.value.avatar_url
-                //   });
-                // }
-              });
-            }}>
+            <Button
+              size="sm"
+              variant="primary"
+              className="bg-neutral-secondary-medium hover:bg-neutral-tertiary-medium hover:text-heading text-white font-bold py-2 px-4 rounded"
+              onClick={() => {
+                handlePrintQuizz(data)
+              }}
+            >
               In
             </Button>
+
           </div>
         );
       },
       className: "text-lg font-semibold text-gray-800 dark:text-white/90",
-      orderable: false, // Prevent sorting on this column
-      searchable: false // Prevent searching on this column
+      orderable: false,
+      searchable: false
     }
   ];
 
   return (
 
     <>
+      {/* ... (ComponentCard Chức năng & Danh sách giữ nguyên) ... */}
       <ComponentCard title="Chức năng">
         <CreateQuizzButton onCreateSuccess={() => {
           refreshData()
         }} />
       </ComponentCard>
       <ComponentCard title="Danh sách">
-
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-
-
-
           <div className="max-w-full overflow-x-auto">
             <div className="min-w-[1102px] p-8">
               <DataTable
@@ -348,9 +377,7 @@ export default function QuizzTables() {
                     lengthMenu: 'Hiển thị _MENU_ dòng dữ liệu',
                     emptyTable: 'Không có dữ liệu',
                     info: 'Hiển thị từ _START_ đến _END_ trên _TOTAL_ dữ liệu',
-                    infoEmpty: 'Không có dữ liệu', // Change this string
-
-
+                    infoEmpty: 'Không có dữ liệu',
                   }
                 }}
 
@@ -360,6 +387,42 @@ export default function QuizzTables() {
           </div>
         </div>
       </ComponentCard>
+
+      {/* --- PREVIEW PDF MODAL --- */}
+
+      <Modal isOpen={showPreview && !!pdfBlob} onClose={handleClosePreview} isFullscreen >
+        <div className="fixed top-0 left-0 flex flex-col justify-between w-full h-screen p-6 overflow-x-hidden overflow-y-auto bg-white dark:bg-gray-900 lg:p-10">
+          <div
+            className=""
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4">Xem trước PDF</h2>
+
+            <div className="flex justify-center mb-4 gap-4">
+              <Button size="sm" variant="primary" onClick={handleDownload}>
+                Tải xuống
+              </Button>
+              <Button size="sm" variant="secondary" onClick={handleClosePreview}>
+                Đóng
+              </Button>
+            </div>
+
+            {/* Sử dụng PDF Viewer */}
+            <div className="border p-2 rounded" >
+              <Worker workerUrl={WORKER_URL}>
+                {pdfBlob && <Viewer
+                  fileUrl={window.URL.createObjectURL(pdfBlob)}
+                  // workerUrl không cần thiết ở đây vì đã cấu hình GlobalOptions
+                  renderLoader={() => <div className="p-4 text-center">Đang tải PDF...</div>}
+                  plugins={[renderDefaultLayout]} // Thêm DefaultLayout để có thanh công cụ
+                />}
+
+              </Worker>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
     </>
   );
 }

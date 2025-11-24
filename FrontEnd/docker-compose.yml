@@ -6,6 +6,5 @@ services:
     build: .
     ports:
       - "8080:8080"
-    volumes:
-      - .:/app # Mount the host project directory to the container's /app
-      - /app/node_modules # Ensure node_modules inside the container is not overwritten by host
+    environment:
+      - NODE_ENV=production
