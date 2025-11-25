@@ -108,7 +108,10 @@ export default function MaterialsTable() {
     return rs.data
   }
 
-
+  const openInNewTab = (url) => {
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
+    if (newWindow) newWindow.opener = null
+  }
 
   const downloadFile = async (id: string) => {
     Swal.fire({
@@ -131,29 +134,34 @@ export default function MaterialsTable() {
 
 
       if (rs?.data?.url) {
-        const downloadData = await axios({
-          url: rs?.data?.url,
-          method: "GET",
-          responseType: "blob" // important
-        })
+        if (rs.data.type === 'video') {
+          openInNewTab(rs?.data?.url)
+        } else {
+          const downloadData = await axios({
+            url: rs?.data?.url,
+            method: "GET",
+            responseType: "blob" // important
+          })
 
-        const url = window.URL.createObjectURL(new Blob([downloadData.data]));
+          const url = window.URL.createObjectURL(new Blob([downloadData.data]));
 
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute(
-          'download',
-          (rs.data.filePath.split('/') as string[]).pop(),
-        );
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute(
+            'download',
+            (rs.data.filePath.split('/') as string[]).pop(),
+          );
 
-        // Append to html link element page
-        document.body.appendChild(link);
+          // Append to html link element page
+          document.body.appendChild(link);
 
-        // Start download
-        link.click();
+          // Start download
+          link.click();
 
-        // Clean up and remove the link
-        link.parentNode.removeChild(link);
+          // Clean up and remove the link
+          link.parentNode.removeChild(link);
+        }
+
       }
       Swal.close()
 
@@ -178,7 +186,7 @@ export default function MaterialsTable() {
       //   Tạo quizz mới
       // </Button>, // Default button HTML
       // render: () = '',
-      className: 'dt-right' ,
+      className: 'dt-right',
       createdCell: function (cell, data, row) {
         hydrateRoot(
           cell,
