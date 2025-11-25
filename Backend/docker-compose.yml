@@ -4,6 +4,8 @@ services:
   api:
     restart: unless-stopped
     build: .
+    expose:
+      - "3000"
     ports:
       - "4000:3000"
     # volumes:

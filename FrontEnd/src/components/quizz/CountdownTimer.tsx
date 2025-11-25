@@ -66,7 +66,7 @@ const CountdownTimer = forwardRef(({ onComplete, timeLimit }: {}, ref) => {
 
     useImperativeHandle(ref, () => ({
         getTimeTake: () => {
-            return limit - secondsLeft;
+            return (limit - secondsLeft) / 60;
         },
     }), [secondsLeft, limit]);
 

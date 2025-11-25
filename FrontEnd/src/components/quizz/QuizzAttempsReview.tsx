@@ -114,6 +114,8 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
         score: number
         totalQuestions: number
         correctAnswers: number
+        timeConfig?: number // minute
+        timeSpent?: number // minute
         details: Array<{
             questionId: string
             question: string
@@ -215,7 +217,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
                 </div>
 
                 {/* {quizzData && <QuizzReview quizzData={quizzData} />} */}
-                <div className="grid grid-cols-4 gap-5 sm:gap-6 xl:grid-cols-4">
+                <div className="grid xl:grid-cols-4 gap-5 sm:gap-6 xl:grid-cols-4 md:grid-cols-2 sm:grid-cols-1">
                     {listAttempts.map((attempt, index) => {
                         return <ComponentCard key={index} title={formatDateVn(new Date(attempt.createdAt))}>
                             <div className="grid grid-cols-2">
@@ -223,6 +225,20 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
                                     <div>
                                         <Label>Điểm số : {attempt.score}/100</Label>
                                     </div>
+
+                                    {attempt.timeConfig && <div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Thời gian giới hạn : {attempt.timeConfig} phút
+                                        </p>
+                                    </div>}
+
+
+                                    {attempt.timeSpent && <div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Thời gian làm bài : {attempt.timeSpent} phút
+                                        </p>
+                                    </div>}
+
 
                                     <div>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">

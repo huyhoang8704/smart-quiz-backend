@@ -169,7 +169,7 @@ export default function MaterialsTable() {
 
   const columns: ConfigColumns[] = [
     { data: '_id', visible: false, },
-    { data: 'title', title: "Tên file" },
+    { data: 'title', title: "Tên file", className: 'dt-left ' },
     { data: 'type', title: "Loại file" },
     { data: 'processedContent', title: "Mô tả" },
     {
@@ -178,10 +178,11 @@ export default function MaterialsTable() {
       //   Tạo quizz mới
       // </Button>, // Default button HTML
       // render: () = '',
+      className: 'dt-right' ,
       createdCell: function (cell, data, row) {
         hydrateRoot(
           cell,
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 justify-end">
             {/* <Button size="sm" variant="primary" onClick={() => {
               push(`/quizzs/${data}`)
             }}>
