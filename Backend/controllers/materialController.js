@@ -3,10 +3,16 @@ const supabase = require("../utils/supabaseClient");
 const multer = require("multer");
 const path = require("path");
 const getPagination = require("../utils/paginate");
-const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const s3 = require("../config/space");
 const { sanitizeFileName, mapFileType } = require("../utils/fileHelper");
-
+const fs = require("fs");
+const os = require("os");
+const fsp = require("fs/promises");
+const ffmpeg = require("fluent-ffmpeg");
+const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+const { PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const wav = require("wav-decoder");
 
 // // Dùng memoryStorage để đọc file từ RAM
 // const storage = multer.memoryStorage();
@@ -86,9 +92,81 @@ const { sanitizeFileName, mapFileType } = require("../utils/fileHelper");
 //     res.status(500).json({ error: error.message });
 //   }
 // };
+// Giả lập hàm extract text từ video (thay bằng API thực tế nếu cần)
+let transcriber = null;
+
+// Lazy-load Whisper model từ @xenova/transformers (ESM)
+async function getTranscriber() {
+  if (!transcriber) {
+    console.log("Loading Whisper model (Xenova/whisper-small)...");
+    const { pipeline } = await import("@xenova/transformers");
+    transcriber = await pipeline(
+      "automatic-speech-recognition",
+      "Xenova/whisper-small"
+    );
+  }
+  return transcriber;
+}
+
+async function extractTextFromVideoBuffer(buffer) {
+  const tmpDir = os.tmpdir();
+  const videoPath = `${tmpDir}/video-${Date.now()}.mp4`;
+  const audioPath = `${tmpDir}/audio-${Date.now()}.wav`;
+
+  try {
+    await fsp.writeFile(videoPath, buffer);
+
+    await new Promise((resolve, reject) => {
+      ffmpeg(videoPath)
+        .outputOptions(["-vn", "-ac 1", "-ar 16000"])
+        .save(audioPath)
+        .on("end", resolve)
+        .on("error", reject);
+    });
+
+    // 3. Lấy transcriber (lazy-load ESM)
+    const transcriber = await getTranscriber();
+
+    // 4. Đọc file WAV thành buffer
+    const audioFileBuffer = await fsp.readFile(audioPath);
+
+    // 5. Decode WAV -> lấy waveform dạng Float32Array
+    const decoded = await wav.decode(audioFileBuffer);
+    // decoded: { sampleRate, channelData: [Float32Array, Float32Array?] }
+
+    // Lấy kênh mono (mình đã ép -ac 1 ở ffmpeg nên channelData[0] là đủ)
+    const monoData = decoded.channelData[0]; // Float32Array
+
+    // 6. Gọi Whisper với waveform thô + chunking
+    const result = await transcriber(monoData, {
+      chunk_length_s: 30, // mỗi chunk 30s
+      stride_length_s: 5, // overlap 5s giữa các chunk
+    });
+
+    let text = result.text || "";
+
+    if (!text.trim()) {
+      return "[Không trích xuất được nội dung thoại từ video]";
+    }
+
+    const MAX_CHARS = 20000;
+    if (text.length > MAX_CHARS) {
+      text = text.slice(0, MAX_CHARS) + "\n\n[Transcript bị cắt bớt]";
+    }
+
+    return text;
+  } finally {
+    try {
+      await fsp.unlink(videoPath);
+    } catch {}
+    try {
+      await fsp.unlink(audioPath);
+    } catch {}
+  }
+}
+
 const uploadMaterial = async (req, res) => {
   try {
-
     if (!req.file) {
       return res.status(400).json({ error: "Please upload a file" });
     }
@@ -100,9 +178,7 @@ const uploadMaterial = async (req, res) => {
     }
 
     // Create safe file name
-    const safeName =
-      Date.now() + "-" + sanitizeFileName(req.file.originalname);
-
+    const safeName = Date.now() + "-" + sanitizeFileName(req.file.originalname);
     // Path in bucket
     const filePath = `materials/${req.user.id}/${safeName}`;
 
@@ -127,18 +203,34 @@ const uploadMaterial = async (req, res) => {
     // Public URL
     const publicUrl = `https://qldapm.sgp1.digitaloceanspaces.com/${filePath}`;
 
+    // Nếu là video, extract text từ video
+    let finalProcessedContent = processedContent || "";
+    const fileType = mapFileType(req.file.mimetype);
+    console.log("File type detected:", fileType);
+    if (fileType === "video") {
+      try {
+        // Extract text từ video buffer
+        finalProcessedContent = await extractTextFromVideoBuffer(
+          req.file.buffer
+        );
+        console.log("Extracted text from video:", finalProcessedContent);
+      } catch (err) {
+        // Nếu lỗi, vẫn lưu processedContent nếu có
+        console.error("Lỗi extract text từ video:", err);
+      }
+    }
+
     // Save to database
     const material = await Material.create({
       ownerId: req.user.id,
       title,
-      type: mapFileType(req.file.mimetype),
+      type: fileType,
       filePath,
       url: publicUrl,
-      processedContent: processedContent || "",
+      processedContent: finalProcessedContent,
     });
 
     return res.status(201).json(material);
-
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -151,12 +243,12 @@ const getMyMaterials2 = async (req, res) => {
     let query = { ownerId: req.user._id };
 
     if (type) query.type = type;
-  
+
     // Search theo title hoặc processedContent
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
-        { processedContent: { $regex: search, $options: "i" } }
+        { processedContent: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -167,7 +259,6 @@ const getMyMaterials2 = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // Lấy danh sách học liệu của user
 const getMyMaterials = async (req, res) => {
@@ -176,12 +267,12 @@ const getMyMaterials = async (req, res) => {
     let query = { ownerId: req.user._id };
 
     if (type) query.type = type;
-  
+
     // Search theo title hoặc processedContent
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
-        { processedContent: { $regex: search, $options: "i" } }
+        { processedContent: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -192,7 +283,6 @@ const getMyMaterials = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // Lấy chi tiết học liệu
 const getMaterialById = async (req, res) => {
@@ -226,9 +316,18 @@ const deleteMaterial = async (req, res) => {
         .json({ message: "Not authorized to delete this material" });
     }
 
-    // Xóa file trong Supabase Storage
+    // Xóa file trong DigitalOcean Spaces
     if (material.filePath) {
-      await supabase.storage.from("materials").remove([material.filePath]);
+      try {
+        await s3.send(
+          new DeleteObjectCommand({
+            Bucket: "qldapm",
+            Key: material.filePath,
+          })
+        );
+      } catch (err) {
+        console.error("Error deleting file from Spaces:", err);
+      }
     }
 
     await material.deleteOne();
