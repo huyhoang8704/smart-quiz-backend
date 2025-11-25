@@ -33,6 +33,13 @@ const nextConfig: NextConfig = {
         port: '', // Optional: specify if a non-standard port is used
         pathname: '/**', // Optional: specify a path pattern for images
       },
+      // https://qldapm.sgp1.digitaloceanspaces.com/materials/68cd25ee7fb350d4799d9df9/1764032279067-v14025g50000cmhfsv7og65ul8pr6al0.MP4
+      {
+        protocol: 'https', // or 'http'
+        hostname: 'qldapm.sgp1.digitaloceanspaces.com', // Replace with the hostname of your image source
+        port: '', // Optional: specify if a non-standard port is used
+        pathname: '/**', // Optional: specify a path pattern for images
+      },
       // {
       //   protocol: 'https',
       //   hostname: 'another-domain.com', // Add more patterns for other remote sources
