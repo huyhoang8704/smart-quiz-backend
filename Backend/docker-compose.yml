@@ -8,6 +8,10 @@ services:
       - "3000"
     ports:
       - "4000:3000"
+    # Thêm các biến môi trường khác từ file .env của bạn vào đây
+    # - MONGODB_URI=mongodb://...
+    # Nếu muốn dùng hot-reload khi code (Development mode), bỏ comment dòng dưới:
+    # command: npm run dev
     # volumes:
-    #   - ../Backend:/app # Mount the host project directory to the container's /app
-    #   - /app/node_modules # Ensure node_modules inside the container is not overwritten by host
+    #   - .:/app
+    #   - /app/node_modules
