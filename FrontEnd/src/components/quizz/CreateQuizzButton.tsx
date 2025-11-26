@@ -26,7 +26,7 @@ const getListData = async () => {
     const rs = await axiosInstance(`/api/materials`, {
         method: "GET",
     })
-    console.log(rs.data)
+
     return rs.data
 }
 

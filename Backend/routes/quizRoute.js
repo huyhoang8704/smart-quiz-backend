@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const quizController = require("../controllers/quizController");
 const auth = require("../middleware/authMiddleware");
-const exportQuizPdf  = require("../controllers/quizExportController");
+const exportQuizPdf = require("../controllers/quizExportController");
 
 /**
  * @swagger
@@ -117,6 +117,24 @@ const exportQuizPdf  = require("../controllers/quizExportController");
  *         description: Invalid input
  */
 router.post("/", auth, quizController.createQuiz);
+
+
+/**
+ * @swagger
+ * /api/quizzes/history:
+ *   get:
+ *     summary: Get quizzes created by the current teacher
+ *     tags: [Quiz]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Danh sách lịch sử làm bài
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/history", auth, quizController.getMyHistory);
+
 
 /**
  * @swagger
@@ -610,9 +628,7 @@ router.post("/generate", auth, quizController.generateQuiz);
  *         description: "Lỗi server khi chấm quiz"
  */
 
-
 router.post("/:quizId/attempt", auth, quizController.attemptQuiz);
-
 
 /**
  * @swagger
@@ -621,7 +637,7 @@ router.post("/:quizId/attempt", auth, quizController.attemptQuiz);
  *     summary: Export quiz to PDF
  *     description: |
  *       Xuất quiz ra file PDF. Hỗ trợ hai chế độ:
- *       - **answers=true**: xuất PDF kèm đáp án  
+ *       - **answers=true**: xuất PDF kèm đáp án
  *       - **answers=false** hoặc không truyền: xuất PDF KHÔNG kèm đáp án
  *
  *     tags: [Quiz]

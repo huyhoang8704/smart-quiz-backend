@@ -38,10 +38,9 @@ export default function QuizzTablesAttempts() {
   const { axiosInstance, status } = useAxiosAuth(); // <--- Lấy instance đã có token
 
   const getListData = useCallback(async () => {
-    const rs = await axiosInstance(`/api/quizzes`, {
+    const rs = await axiosInstance(`/api/quizzes/history`, {
       method: "GET",
     })
-    console.log(rs.data)
     return rs.data
   }, [axiosInstance])
 
@@ -55,14 +54,7 @@ export default function QuizzTablesAttempts() {
   const refreshData = useCallback(() => {
     setLoading(true)
     getListData().then(async x => {
-
-      for (let i = 0; i < x.length; i++) {
-        const element = x[i];
-        const rrr = await axiosInstance(`/api/quizzes/${element._id}/attempts`)
-        console.log("🚀 ~ QuizzTables ~ rrr:", rrr)
-        x[i].quizzAttemptsCount = rrr.data.length
-      }
-      setTableData(x.filter(y => y.quizzAttemptsCount > 0))
+      setTableData(x)
       setLoading(false)
     }).catch(e => {
       console.log("🚀 ~ QuizzTablesAttempts ~ e:", e)
@@ -97,10 +89,10 @@ export default function QuizzTablesAttempts() {
 
   const columns: ConfigColumns[] = [
     { data: '_id', visible: false, },
-    { data: 'title', title: "Tên quizz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
-    { data: 'settings.totalQuestions', title: "Tổng số câu hỏi", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
+    { data: 'quizTitle', title: "Tên quizz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
+    { data: 'totalQuestions', title: "Tổng số câu hỏi", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     // { data: 'settings.difficulty', title: "Độ khó" },
-    { data: "quizzAttemptsCount", title: "Số bài quizz đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
+    { data: "attemptsCount", title: "Số bài quizz đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     {
       data: '_id', // No data source for this column, we'll render it manually
       // defaultContent: <Button size="sm" variant="primary" endIcon={<BoxIcon />}>
