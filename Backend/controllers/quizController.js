@@ -4,6 +4,7 @@ const Material = require("../models/Material");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs").promises;
 const path = require("path");
+const mongoose = require("mongoose");
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -569,6 +570,73 @@ const getMyQuizzes = async (req, res) => {
   }
 };
 
+async function getMyQuizHistory(userId) {
+  try {
+    const history = await QuizAttempt.aggregate([
+      // 1. Lọc ra các bài làm của user hiện tại
+      {
+        $match: {
+          studentId: new mongoose.Types.ObjectId(userId),
+        },
+      },
+
+      // 2. Gom nhóm theo quizId để đếm số lần làm bài (Số bài quizz đã thực hiện)
+      {
+        $group: {
+          _id: "$quizId",
+          attemptsCount: { $sum: 1 }, // Đếm số lượng record
+          lastAttemptDate: { $max: "$createdAt" }, // (Tuỳ chọn) Lấy ngày làm gần nhất để sort
+        },
+      },
+
+      // 3. Join với bảng Quizzes để lấy thông tin chi tiết (Title, Questions)
+      {
+        $lookup: {
+          from: "quizzes", // Tên collection trong MongoDB (thường là số nhiều của model name)
+          localField: "_id",
+          foreignField: "_id",
+          as: "quizDetails",
+        },
+      },
+
+      // 4. Giải nén mảng quizDetails (vì lookup trả về mảng)
+      {
+        $unwind: "$quizDetails",
+      },
+
+      // 5. Chọn các trường cần thiết để hiển thị lên UI
+      {
+        $project: {
+          _id: 1, // Quiz ID
+          quizTitle: "$quizDetails.title", // Cột 1: Tên quizz
+          totalQuestions: { $size: "$quizDetails.questions" }, // Cột 2: Tổng số câu hỏi (đếm độ dài mảng questions)
+          attemptsCount: 1, // Cột 3: Số bài quizz đã thực hiện (lấy từ bước group)
+          lastAttemptDate: 1,
+        },
+      },
+
+      // 6. Sắp xếp (Tuỳ chọn: bài nào mới làm gần đây thì lên đầu)
+      {
+        $sort: { lastAttemptDate: -1 },
+      },
+    ]);
+
+    return history;
+  } catch (error) {
+    console.error("Lỗi lấy lịch sử quiz:", error);
+    throw error;
+  }
+}
+
+const getMyHistory = async (req, res) => {
+  try {
+    const quizzes = await getMyQuizHistory(req.user.id);
+    res.json(quizzes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Xóa quiz
 const deleteQuiz = async (req, res) => {
   try {
@@ -699,4 +767,5 @@ module.exports = {
   getMyQuizzes,
   deleteQuiz,
   attemptQuiz,
+  getMyHistory,
 };

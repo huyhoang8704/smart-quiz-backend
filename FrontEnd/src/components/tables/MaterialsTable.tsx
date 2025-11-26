@@ -62,7 +62,7 @@ export default function MaterialsTable() {
     const rs = await axiosInstance(`/api/materials`, {
       method: "GET",
     })
-    console.log(rs.data)
+    
     return rs.data
   }, [axiosInstance])
 
@@ -91,7 +91,7 @@ export default function MaterialsTable() {
       method: "DELETE",
     })
 
-    console.log("🚀 ~ deleteFile ~ rs.data:", rs.data)
+    
     Swal.close()
     if (rs?.data?.message === "Material deleted successfully") {
       toast.success("Xoá file thành công!", {
