@@ -171,7 +171,7 @@ const uploadMaterial = async (req, res) => {
       return res.status(400).json({ error: "Please upload a file" });
     }
 
-    const { title, processedContent } = req.body;
+    const { title, processedContent, videoExtractContent } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: "Title is required" });
