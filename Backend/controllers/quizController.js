@@ -132,7 +132,11 @@ Không lộ đáp án trong phần câu hỏi. Trả về JSON đúng định d�
           : "";
       return `${prefix}
 - Loại: ${mat.type}
-- Nội dung: "${mat.processedContent || "Không có nội dung được xử lý"}"`;
+- Nội dung: "${
+        mat.type === "video"
+          ? mat.videoExtractContent || "Không có nội dung được xử lý"
+          : mat.processedContent || "Không có nội dung được xử lý"
+      }"`;
     })
     .join("\n");
 
