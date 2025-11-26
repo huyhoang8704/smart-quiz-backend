@@ -171,7 +171,7 @@ const uploadMaterial = async (req, res) => {
       return res.status(400).json({ error: "Please upload a file" });
     }
 
-    const { title, processedContent, videoExtractContent } = req.body;
+    const { title, processedContent } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: "Title is required" });
@@ -204,7 +204,7 @@ const uploadMaterial = async (req, res) => {
     const publicUrl = `https://qldapm.sgp1.digitaloceanspaces.com/${filePath}`;
 
     // Nếu là video, extract text từ video
-    let finalVideoExtractContent = videoExtractContent || "";
+    let finalVideoExtractContent = "";
     const fileType = mapFileType(req.file.mimetype);
     console.log("File type detected:", fileType);
     if (fileType === "video") {
@@ -228,7 +228,7 @@ const uploadMaterial = async (req, res) => {
       filePath,
       url: publicUrl,
       processedContent: processedContent || "",
-      videoExtractContent: finalVideoExtractContent,
+      videoExtract: finalVideoExtractContent,
     });
 
     return res.status(201).json(material);
