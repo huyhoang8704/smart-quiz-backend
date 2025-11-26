@@ -78,7 +78,7 @@ const navItemsTeacher: NavItem[] = [
   // },
   // {
   //   icon: <BoxCubeIcon />,
-  //   name: "Danh sách bài Quizz",
+  //   name: "Danh sách bài Quiz",
   //   path: "/quizzs",
   // },
   {
@@ -113,7 +113,7 @@ const navItemsAdmin: NavItem[] = [
   },
   {
     icon: <BoxCubeIcon />,
-    name: "Danh sách bài Quizz",
+    name: "Danh sách bài Quiz",
     path: "/quizzs",
   },
   {
@@ -144,7 +144,7 @@ const navItemsStudent: NavItem[] = [
   // },
   {
     icon: <BoxCubeIcon />,
-    name: "Danh sách bài Quizz",
+    name: "Danh sách bài Quiz",
     path: "/quizzs",
   },
   {
