@@ -204,16 +204,16 @@ const uploadMaterial = async (req, res) => {
     const publicUrl = `https://qldapm.sgp1.digitaloceanspaces.com/${filePath}`;
 
     // Nếu là video, extract text từ video
-    let finalProcessedContent = processedContent || "";
+    let finalVideoExtractContent = videoExtractContent || "";
     const fileType = mapFileType(req.file.mimetype);
     console.log("File type detected:", fileType);
     if (fileType === "video") {
       try {
         // Extract text từ video buffer
-        finalProcessedContent = await extractTextFromVideoBuffer(
+        finalVideoExtractContent = await extractTextFromVideoBuffer(
           req.file.buffer
         );
-        console.log("Extracted text from video:", finalProcessedContent);
+        console.log("Extracted text from video:", finalVideoExtractContent);
       } catch (err) {
         // Nếu lỗi, vẫn lưu processedContent nếu có
         console.error("Lỗi extract text từ video:", err);
@@ -227,7 +227,8 @@ const uploadMaterial = async (req, res) => {
       type: fileType,
       filePath,
       url: publicUrl,
-      processedContent: finalProcessedContent,
+      processedContent: processedContent || "",
+      videoExtractContent: finalVideoExtractContent,
     });
 
     return res.status(201).json(material);
