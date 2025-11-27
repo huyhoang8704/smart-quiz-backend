@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+// const JavaScriptObfuscator = require('webpack-obfuscator');
+import JavaScriptObfuscator from 'webpack-obfuscator';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -15,13 +17,45 @@ const nextConfig: NextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // 1. TẮT SOURCE MAPS (Nên làm nếu muốn bảo mật tối đa)
+  // Nếu bật, người dùng vẫn có thể xem mã nguồn gốc trong DevTools.
+  productionBrowserSourceMaps: false,
   /* config options here */
-  webpack(config) {
+  webpack(config, { isServer, dev }) {
     config.module.rules.push({
       test: /\.svg$/,
       use: ["@svgr/webpack"],
     });
     config.resolve.alias.canvas = false;
+
+
+    // 2. TÍCH HỢP OBFUSCATOR
+    // Chỉ áp dụng Obfuscator trong môi trường Production (!dev)
+    // và chỉ cho mã Client-side (!isServer)
+    if (!isServer && !dev) {
+      config.plugins.push(
+        new JavaScriptObfuscator(
+          {
+            // --- TÙY CHỌN OBFUSCATOR TĂNG CƯỜNG BẢO MẬT ---
+            compact: true,
+            controlFlowFlattening: true, // Làm rối luồng điều khiển (mạnh mẽ)
+            deadCodeInjection: true,     // Chèn mã chết giả
+            stringArray: true,           // Mã hóa chuỗi
+            stringArrayThreshold: 1,     // Áp dụng cho 100% chuỗi
+            // Bạn có thể tham khảo thêm các tùy chọn khác trên GitHub của javascript-obfuscator
+          },
+          // Những file cần loại trừ (Rất quan trọng để tránh làm hỏng build)
+          [
+            // Loại trừ các file manifest quan trọng của Next.js
+            '_buildManifest.js',
+            '_ssgManifest.js',
+            // Các file khác của Next.js mà bạn không muốn đụng vào
+            'framework-*.js', // Ví dụ
+          ]
+        )
+      );
+    }
+
     return config;
   },
   images: {
