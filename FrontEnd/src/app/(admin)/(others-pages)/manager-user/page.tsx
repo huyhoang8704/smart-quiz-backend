@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Quản lý người dùng | Quản lý dự án phần mềm - Tạo Quizz",
+  title: "Quản lý người dùng | Quản lý dự án phần mềm - Tạo Quiz",
 
   // other metadata
 };

@@ -204,7 +204,7 @@ export default function QuizzTables() {
 
   const columns: ConfigColumns[] = [
     { data: '_id', visible: false, },
-    { data: 'title', title: "Tên quizz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
+    { data: 'title', title: "Tên quiz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     {
       data: 'settings.totalQuestions', title: "Tổng số câu hỏi", className: "text-lg font-semibold text-gray-800 dark:text-white/90",
       width: '200px',

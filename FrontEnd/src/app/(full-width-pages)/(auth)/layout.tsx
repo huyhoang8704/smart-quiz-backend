@@ -31,7 +31,7 @@ export default function AuthLayout({
                   />
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
-                  Quản lý dự án phần mềm - Tạo Quizz
+                  Quản lý dự án phần mềm - Tạo Quiz
                 </p>
               </div>
             </div>

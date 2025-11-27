@@ -183,7 +183,7 @@ export default function MaterialsTable() {
     {
       data: '_id', // No data source for this column, we'll render it manually
       // defaultContent: <Button size="sm" variant="primary" endIcon={<BoxIcon />}>
-      //   Tạo quizz mới
+      //   Tạo quiz mới
       // </Button>, // Default button HTML
       // render: () = '',
       className: 'dt-right',
@@ -274,7 +274,7 @@ export default function MaterialsTable() {
                 }}>
                 {/* <thead>
               <tr>
-                <th>Tên quizz</th>
+                <th>Tên quiz</th>
                 <th>Số câu hỏi</th>
                 <th>Độ khó</th>
                 <th>Số bài quizz đã thực hiện</th>

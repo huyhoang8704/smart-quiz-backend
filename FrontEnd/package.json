@@ -6,7 +6,8 @@
     "dev": "next dev -p 8080",
     "build": "next build",
     "start": "next start -p 8080",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docker-deploy": "docker-compose up -d --build --force-recreate"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",

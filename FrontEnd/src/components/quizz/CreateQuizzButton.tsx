@@ -164,13 +164,13 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
     return <>
         <Button size="sm" variant="primary" endIcon={<BoxIcon
         />} onClick={openModal}>
-            Tạo quizz mới
+            Tạo quiz mới
         </Button>
         <Modal isOpen={isOpen} onClose={closeModal} isFullscreen showCloseButton={!inProcess}>
             <div className="fixed top-0 left-0 flex flex-col justify-between w-full h-screen p-6 overflow-x-hidden overflow-y-auto bg-white dark:bg-gray-900 lg:p-10">
                 <div className="px-2 pr-14">
                     <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                        Tạo quizz mới
+                        Tạo quiz mới
                     </h4>
                     <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
                         Tạo quizz tự động dựa trên tài liệu
@@ -185,7 +185,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
 
                             <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-1">
                                 <div>
-                                    <Label>Tên quizz</Label>
+                                    <Label>Tên quiz</Label>
                                     <Input
                                         type="text"
                                         defaultValue={quizzName}

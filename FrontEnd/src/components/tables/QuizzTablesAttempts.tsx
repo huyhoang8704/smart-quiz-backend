@@ -89,14 +89,14 @@ export default function QuizzTablesAttempts() {
 
   const columns: ConfigColumns[] = [
     { data: '_id', visible: false, },
-    { data: 'quizTitle', title: "Tên quizz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
+    { data: 'quizTitle', title: "Tên quiz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     { data: 'totalQuestions', title: "Tổng số câu hỏi", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     // { data: 'settings.difficulty', title: "Độ khó" },
     { data: "attemptsCount", title: "Số bài quizz đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     {
       data: '_id', // No data source for this column, we'll render it manually
       // defaultContent: <Button size="sm" variant="primary" endIcon={<BoxIcon />}>
-      //   Tạo quizz mới
+      //   Tạo quiz mới
       // </Button>, // Default button HTML
       // render: () = '',
       createdCell: function (cell, data, row) {
