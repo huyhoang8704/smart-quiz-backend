@@ -87,7 +87,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
     const handleSave = useCallback(async () => {
 
         if (!quizzName) {
-            return toast.error("Vui lòng điền tên quizz", { position: "bottom-right" })
+            return toast.error("Vui lòng điền tên quiz", { position: "bottom-right" })
         }
 
         if (!selectedFile || selectedFile.length === 0) {
@@ -147,7 +147,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
             setQuizzDataCreate(createRs)
             openModalPreview()
             // props.onCreateSuccess?.()
-            // return toast.success("Tạo quizz thành công", { position: "bottom-right" })
+            // return toast.success("Tạo quiz thành công", { position: "bottom-right" })
         }
 
 
@@ -173,7 +173,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                         Tạo quiz mới
                     </h4>
                     <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                        Tạo quizz tự động dựa trên tài liệu
+                        Tạo quiz tự động dựa trên tài liệu
                     </p>
                 </div>
                 <div className="flex flex-col">
@@ -257,7 +257,7 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
                                 <div>
                                     <Label>Mô tả chi tiết thêm</Label>
                                     <TextArea
-                                        placeholder="Nhập thêm mô tả cho bài quizz"
+                                        placeholder="Nhập thêm mô tả cho bài quiz"
                                         value={customInstructions}
                                         onChange={(value) => setCustomInstructions(value)}
                                         className="text-base font-medium text-gray-800 dark:text-white/90"
@@ -284,10 +284,10 @@ export default function CreateQuizzButton(props: { onCreateSuccess?: () => void 
             <div className="fixed top-0 left-0 flex flex-col justify-between w-full h-screen p-6 overflow-x-hidden overflow-y-auto bg-white dark:bg-gray-900 lg:p-10 space-y-6">
                 <div className="px-2 pr-14">
                     <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                        Xem lại quizz
+                        Xem lại quiz
                     </h4>
                     <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                        Xác nhận quizz
+                        Xác nhận quiz
                     </p>
                 </div>
                 {quizzDataCreate && <QuizzReview quizzData={quizzDataCreate} />}

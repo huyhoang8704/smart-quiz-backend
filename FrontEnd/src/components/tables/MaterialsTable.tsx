@@ -277,7 +277,7 @@ export default function MaterialsTable() {
                 <th>Tên quiz</th>
                 <th>Số câu hỏi</th>
                 <th>Độ khó</th>
-                <th>Số bài quizz đã thực hiện</th>
+                <th>Số bài quiz đã thực hiện</th>
               </tr>
             </thead> */}
               </DataTable>

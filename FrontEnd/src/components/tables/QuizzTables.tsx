@@ -123,18 +123,18 @@ export default function QuizzTables() {
   // State quản lý Preview Modal
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [currentFilename, setCurrentFilename] = useState("quizz-export.pdf");
+  const [currentFilename, setCurrentFilename] = useState("quiz-export.pdf");
 
   // Hàm render DefaultLayout
   const renderDefaultLayout = useCallback((props: any) => (
     <DefaultLayout {...props} />
   ), []);
 
-  // Hàm xử lý việc xuất/in quizz
+  // Hàm xử lý việc xuất/in quiz
   const handlePrintQuizz = (quizzId: string) => {
     // ... (Swal.fire logic giữ nguyên) ...
     Swal.fire({
-      title: "Bạn có in quizz này không?",
+      title: "Bạn có in quiz này không?",
       input: "checkbox",
       inputLabel: "Có đáp án",
       inputAttributes: {},
@@ -165,8 +165,8 @@ export default function QuizzTables() {
 
           return "success";
         }).catch(error => {
-          console.error("Lỗi khi xuất quizz:", error);
-          toast.error("Xuất quizz thất bại!", { position: "bottom-right" });
+          console.error("Lỗi khi xuất quiz:", error);
+          toast.error("Xuất quiz thất bại!", { position: "bottom-right" });
           return false;
         });
       },
@@ -258,12 +258,12 @@ export default function QuizzTables() {
 
                   Swal.close()
                   if (rs?.message === "Quiz deleted successfully") {
-                    toast.success("Xoá quizz thành công!", {
+                    toast.success("Xoá quiz thành công!", {
                       position: "bottom-right",
                     })
                     refreshData()
                   } else {
-                    toast.error("Xoá quizz thất bại!", {
+                    toast.error("Xoá quiz thất bại!", {
                       position: "bottom-right",
                     })
                   }

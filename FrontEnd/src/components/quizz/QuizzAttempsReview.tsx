@@ -180,7 +180,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
     return <>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
             <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-                Chi tiết quizz
+                Chi tiết quiz
             </h3>
             <div className="space-y-6">
                 <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
@@ -274,7 +274,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
                         Tạo quiz mới
                     </h4>
                     <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                        Tạo quizz tự động dựa trên tài liệu
+                        Tạo quiz tự động dựa trên tài liệu
                     </p>
                 </div> */}
                 <div className="space-y-6">
@@ -289,7 +289,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
     return <>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
             <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-                Làm bài quizz
+                Làm bài quiz
             </h3>
 
 
@@ -325,7 +325,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
         </div>
     </>
     return (
-        <ComponentCard title="Chi tiết quizz">
+        <ComponentCard title="Chi tiết quiz">
             <div className="mx-auto w-full max-w-[630px]">
                 {/* <h3 className="mb-4 font-semibold text-gray-800 text-theme-xl dark:text-white/90 sm:text-2xl">
                     Card Title Here
