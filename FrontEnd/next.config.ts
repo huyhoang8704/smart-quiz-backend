@@ -20,6 +20,15 @@ const nextConfig: NextConfig = {
   // 1. TẮT SOURCE MAPS (Nên làm nếu muốn bảo mật tối đa)
   // Nếu bật, người dùng vẫn có thể xem mã nguồn gốc trong DevTools.
   productionBrowserSourceMaps: false,
+  compiler: {
+    // SWC sẽ chỉ áp dụng quy tắc này trong môi trường production (next build)
+    removeConsole: {
+      // Giữ lại console.error và console.warn (thường quan trọng cho monitoring)
+      // Các lệnh khác như console.log, console.info, console.debug sẽ bị xóa.
+      exclude: ['error', 'warn'],
+    },
+  },
+
   /* config options here */
   webpack(config, { isServer, dev }) {
     config.module.rules.push({
