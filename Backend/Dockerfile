@@ -1,5 +1,5 @@
 # 1. Chọn Base Image: Node 20 trên nền Alpine Linux (nhẹ, bảo mật)
-FROM node:20-alpine
+FROM node:20-slim
 
 # 2. Thiết lập thư mục làm việc
 WORKDIR /app
