@@ -172,7 +172,7 @@ export default function QuizzTake(data: { quizzId: string, timeLimit?: number })
                 Swal.close()
                 toast.success(rs.message, { position: "bottom-right" })
                 console.log("🚀 ~ handleOnClickSubmit ~ rs:", rs)
-                replace(`/quizzresult`)
+                replace(`/quizzs/${data.quizzId}/attempts`)
             } catch (error) {
                 console.log("🚀 ~ QuizzTake ~ error:", error)
                 Swal.close()
