@@ -3,9 +3,9 @@
   "version": "2.0.2",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 8080",
+    "dev": "next dev -p 5001",
     "build": "next build",
-    "start": "next start -p 8080",
+    "start": "next start -p 5001",
     "lint": "next lint",
     "docker-deploy": "docker-compose up -d --build --force-recreate"
   },
@@ -21,6 +21,8 @@
     "@react-jvectormap/world": "^1.1.2",
     "@react-pdf-viewer/core": "^3.12.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
+    "@react-pdf-viewer/toolbar": "^3.12.0",
+    "@react-pdf-viewer/zoom": "^3.12.0",
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/postcss": "^4.0.9",
     "apexcharts": "^4.3.0",

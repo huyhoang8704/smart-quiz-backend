@@ -92,7 +92,7 @@ export default function QuizzTablesAttempts() {
     { data: 'quizTitle', title: "Tên quiz", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     { data: 'totalQuestions', title: "Tổng số câu hỏi", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     // { data: 'settings.difficulty', title: "Độ khó" },
-    { data: "attemptsCount", title: "Số bài quiz đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
+    { data: "attemptsCount", title: "Số lần đã thực hiện", className: "text-lg font-semibold text-gray-800 dark:text-white/90" },
     {
       data: '_id', // No data source for this column, we'll render it manually
       // defaultContent: <Button size="sm" variant="primary" endIcon={<BoxIcon />}>

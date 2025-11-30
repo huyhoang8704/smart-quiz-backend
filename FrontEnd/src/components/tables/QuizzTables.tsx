@@ -6,7 +6,7 @@ import 'datatables.net-dt/css/dataTables.dataTables.css';
 // *** IMPORTS CSS (Đã bỏ comment) ***
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-
+import '@react-pdf-viewer/toolbar/lib/styles/index.css';
 
 import { ConfigColumns } from 'datatables.net-dt';
 import Button from "../ui/button/Button";
@@ -22,12 +22,6 @@ import { toast } from "react-toastify";
 import { useAxiosAuth } from "@/hooks/useAxiosAuth";
 import { Modal } from "../ui/modal";
 
-// *** CẤU HÌNH WORKER (Đảm bảo chạy trên Client) ***
-const WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
-// if (typeof window !== 'undefined' && pdfjs) {
-//   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-// }
-
 // *** DYNAMIC IMPORTS ***
 const DataTable = dynamic(
   async () => {
@@ -42,21 +36,15 @@ const DataTable = dynamic(
   },
   { ssr: false }
 );
-const Viewer = dynamic(() =>
-  import('@react-pdf-viewer/core').then(mod => mod.Viewer),
-  { ssr: false }
-);
 
-const Worker = dynamic(() =>
-  import('@react-pdf-viewer/core').then(mod => mod.Worker),
-  { ssr: false }
-);
-
-const DefaultLayout = dynamic(() =>
-  import('@react-pdf-viewer/default-layout').then(mod => mod.DefaultLayout),
-  { ssr: false }
-);
+// THAY ĐỔI QUAN TRỌNG: Import component PDFViewer mới tạo
+const PDFViewer = dynamic(() => import("../pdf/PDFViewer"), {
+  ssr: false,
+  loading: () => <div className="p-10 text-center">Đang tải trình đọc PDF...</div>
+});
 // *** END DYNAMIC IMPORTS ***
+
+
 
 
 export default function QuizzTables() {
@@ -134,9 +122,9 @@ export default function QuizzTables() {
   const handlePrintQuizz = (quizzId: string) => {
     // ... (Swal.fire logic giữ nguyên) ...
     Swal.fire({
-      title: "Bạn có in quiz này không?",
+      title: "Bạn có muốn in quiz này không?",
       input: "checkbox",
-      inputLabel: "Có đáp án",
+      inputLabel: "Kèm đáp án nha",
       inputAttributes: {},
       showCancelButton: true,
       cancelButtonText: "Huỷ",
@@ -409,15 +397,12 @@ export default function QuizzTables() {
 
             {/* Sử dụng PDF Viewer */}
             <div className="border p-2 rounded" >
-              <Worker workerUrl={WORKER_URL}>
-                {pdfBlob && <Viewer
-                  fileUrl={window.URL.createObjectURL(pdfBlob)}
-                  // workerUrl không cần thiết ở đây vì đã cấu hình GlobalOptions
-                  renderLoader={() => <div className="p-4 text-center">Đang tải PDF...</div>}
-                  plugins={[renderDefaultLayout]} // Thêm DefaultLayout để có thanh công cụ
-                />}
-
-              </Worker>
+              {pdfBlob && (
+                <div className="h-full w-full bg-white shadow-lg rounded-lg overflow-hidden">
+                  {/* Gọi Component PDFViewer mới, truyền URL blob vào */}
+                  <PDFViewer fileUrl={window.URL.createObjectURL(pdfBlob)} />
+                </div>
+              )}
             </div>
           </div>
         </div>
