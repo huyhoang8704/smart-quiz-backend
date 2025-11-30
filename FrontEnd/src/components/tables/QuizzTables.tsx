@@ -124,7 +124,7 @@ export default function QuizzTables() {
     Swal.fire({
       title: "Bạn có muốn in quiz này không?",
       input: "checkbox",
-      inputLabel: "Kèm đáp án nha",
+      inputLabel: "Kèm đáp án",
       inputAttributes: {},
       showCancelButton: true,
       cancelButtonText: "Huỷ",
