@@ -248,17 +248,18 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
 
                                 </div>
 
-                                <div className="flex justify-end">
-                                    <Button size="sm" variant="primary" onClick={() => {
-                                        // push(`/quizzs/${data}/attempts`)
-                                        openModal()
-                                        setSelectedAttempt(attempt)
-                                    }}>
-                                        Chi tiết
-                                    </Button>
-                                </div>
+
                             </div>
 
+                            <div className="flex full">
+                                <Button size="md" variant="primary" className="w-full" onClick={() => {
+                                    // push(`/quizzs/${data}/attempts`)
+                                    openModal()
+                                    setSelectedAttempt(attempt)
+                                }}>
+                                    Chi tiết
+                                </Button>
+                            </div>
                         </ComponentCard>
                     })}
                 </div>
@@ -279,7 +280,7 @@ export default function QuizzAttempsReview(data: { quizzId: string }) {
                 </div> */}
                 <div className="space-y-6">
 
-                    <QuizzAttempsReviewDetail quizzData={quizzData} details={selectedAttempt?.details} />
+                    <QuizzAttempsReviewDetail quizzData={quizzData} details={selectedAttempt?.details} attempt={selectedAttempt} />
                 </div>
 
             </div>

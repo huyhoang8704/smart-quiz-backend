@@ -91,40 +91,59 @@ export default function QuizzTake(data: { quizzId: string, timeLimit?: number })
 
     const handleOnClickSubmit = useCallback(async () => {
         const answeredQuestions = quizzTakeExampleRef.current?.getData()
-        console.log("🚀 ~ handleOnClickSubmit ~ answeredQuestions:", answeredQuestions)
-        if (answeredQuestions) {
-            try {
-                Swal.fire({
-                    title: "Đang nộp bài...",
-                    html: "Vui lòng đợi trong giây lát!",
-                    icon: "info",
-                    showConfirmButton: false,
-                    showDenyButton: false,
-                    showCancelButton: false,
-                    allowOutsideClick: false,
-                    timerProgressBar: true,
-                    allowEscapeKey: false
-                })
+        if (answeredQuestions)
+            Swal.fire({
+                title: "Bạn có chắc chắn muốn nộp bài không?",
+                html: "Sau khi nộp bạn sẽ không thể thay đổi câu trả lời!",
+                icon: "warning",
 
-                const rs = await submitQuizzAnswered(answeredQuestions.map(x => {
-                    return {
-                        questionId: x._id,
-                        answer: x.answer
+                showConfirmButton: true,
+                showDenyButton: true,
+                showCancelButton: false,
+                allowOutsideClick: false,
+                timerProgressBar: false,
+                allowEscapeKey: false,
+                confirmButtonText: 'Xác nhận',
+                denyButtonText: 'Huỷ',
+            }).then(async (result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed) {
+                    if (answeredQuestions) {
+                        try {
+                            Swal.fire({
+                                title: "Đang nộp bài...",
+                                html: "Vui lòng đợi trong giây lát!",
+                                icon: "info",
+                                showConfirmButton: false,
+                                showDenyButton: false,
+                                showCancelButton: false,
+                                allowOutsideClick: false,
+                                timerProgressBar: true,
+                                allowEscapeKey: false
+                            })
+
+                            const rs = await submitQuizzAnswered(answeredQuestions.map(x => {
+                                return {
+                                    questionId: x._id,
+                                    answer: x.answer
+                                }
+                            }))
+                            Swal.close()
+                            toast.success(rs.message, { position: "bottom-right" })
+                            console.log("🚀 ~ handleOnClickSubmit ~ rs:", rs)
+                            replace(`/quizzs/${data.quizzId}/attempts`)
+                        } catch (error) {
+                            console.log("🚀 ~ QuizzTake ~ error:", error)
+                            Swal.close()
+                            if (error.message) {
+                                toast.success(error.message, { position: "bottom-right" })
+                            }
+                        }
+
                     }
-                }))
-                Swal.close()
-                toast.success(rs.message, { position: "bottom-right" })
-                console.log("🚀 ~ handleOnClickSubmit ~ rs:", rs)
-                replace(`/quizzresult`)
-            } catch (error) {
-                console.log("🚀 ~ QuizzTake ~ error:", error)
-                Swal.close()
-                if (error.message) {
-                    toast.success(error.message, { position: "bottom-right" })
                 }
-            }
+            })
 
-        }
     }, [submitQuizzAnswered, replace])
 
     const handleOnClickSubmitAuto = useCallback(async () => {

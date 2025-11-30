@@ -8,6 +8,7 @@ import { QuizzDataType } from "@/utils/types";
 import Button from "../ui/button/Button";
 import { BoxIcon } from "@/icons";
 import Radio from "../form/input/Radio";
+import Label from "../form/Label";
 
 
 
@@ -23,12 +24,66 @@ export default function QuizzAttempsReviewDetail(data: {
         isCorrect: boolean
         _id: string
     }>
+    attempt?: {
+        _id: string
+        quizId: string
+        studentId: {
+            _id: string
+            email: string
+        }
+        score: number
+        totalQuestions: number
+        correctAnswers: number
+        timeConfig?: number // minute
+        timeSpent?: number // minute
+        details: Array<{
+            questionId: string
+            question: string
+            correctAnswer: string
+            userAnswer?: string
+            isCorrect: boolean
+            _id: string
+        }>
+        createdAt: string
+        updatedAt: string
+        __v: number
+    }
 }) {
     const [quizzData] = useState(data.quizzData)
+    console.log("🚀 ~ QuizzAttempsReviewDetail ~ quizzData:", quizzData)
     const [details] = useState(data.details)
+    const [attempt] = useState(data.attempt)
 
 
     return <>
+        <div className="grid grid-cols-2">
+            <div>
+                <div>
+                    <Label>Điểm số : {attempt?.score}/100</Label>
+                </div>
+
+                {attempt?.timeConfig && <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Thời gian giới hạn : {attempt.timeConfig} phút
+                    </p>
+                </div>}
+
+
+                {attempt?.timeSpent && <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Thời gian làm bài : {attempt?.timeSpent} phút
+                    </p>
+                </div>}
+
+
+                <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Số câu đúng : {attempt?.details.filter(x => x.isCorrect).length}
+                    </p>
+                </div>
+
+            </div>
+        </div>
         {quizzData?.questions.map((question, index) => {
             const found = details?.find(x => x.questionId === question._id)
             return <ComponentCard key={index} title={`Câu ${index + 1} : ${found?.isCorrect ? 'Đúng' : 'Sai'}`}>
