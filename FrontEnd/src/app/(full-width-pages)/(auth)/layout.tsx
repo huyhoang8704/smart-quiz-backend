@@ -21,7 +21,7 @@ export default function AuthLayout({
             <div className="relative items-center justify-center  flex z-1">
               {/* <!-- ===== Common Grid Shape Start ===== --> */}
               <GridShape />
-              <div className="flex flex-col items-center max-w-xs">
+              <div className="flex flex-col items-center">
                 <Link href="/" className="block mb-4">
                   <Image
                     width={231}
@@ -30,8 +30,8 @@ export default function AuthLayout({
                     alt="Logo"
                   />
                 </Link>
-                <p className="text-center text-gray-400 dark:text-white/60">
-                  Quản lý dự án phần mềm - Tạo Quiz
+                <p className="text-center text-gray-400 dark:text-white/60 text-4xl">
+                  Smart quiz generator
                 </p>
               </div>
             </div>
