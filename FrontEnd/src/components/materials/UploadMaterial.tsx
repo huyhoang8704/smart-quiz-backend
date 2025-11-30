@@ -129,9 +129,10 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
                                 </div>
 
                                 <div>
-                                    <Label>Chọn file <span className="text-error-500">*</span>{" "}</Label>
+                                    <Label>Chọn file <span className="text-error-500">*</span>{" (.pdf, .docx, .doc, .txt, .mp4)"}</Label>
                                     <FileInput
                                         onChange={handleFileChange}
+                                        accept="application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, text/plain, video/mp4"
                                     />
                                 </div>
 
