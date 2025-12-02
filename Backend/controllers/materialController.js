@@ -13,7 +13,33 @@ const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 const { PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const wav = require("wav-decoder");
+const { AssemblyAI } = require('assemblyai');
 
+const assemblyClient = new AssemblyAI({
+  apiKey: process.env.ASSEMBLYAI_API_KEY,
+});
+
+async function handleAssemblyAITranscription(audioUrl) {
+  const startTime = Date.now();
+  try {
+    const transcript = await assemblyClient.transcripts.transcribe({
+      audio: audioUrl,
+      language_detection: true
+    });
+
+    if (transcript.status === 'error') {
+      throw new Error(transcript.error);
+    }
+
+    let text = transcript.text || "";
+    const endTime = Date.now();
+    console.log(`AssemblyAI transcription took ${(endTime - startTime) / 1000} seconds`);
+    return text;
+  } catch (error) {
+    console.error("AssemblyAI transcription error:", error);
+    return "";
+  }
+}
 // // Dùng memoryStorage để đọc file từ RAM
 // const storage = multer.memoryStorage();
 // const upload = multer({
@@ -98,12 +124,17 @@ let transcriber = null;
 // Lazy-load Whisper model từ @xenova/transformers (ESM)
 async function getTranscriber() {
   if (!transcriber) {
+    const startTime = Date.now();
     console.log("Loading Whisper model (Xenova/whisper-small)...");
     const { pipeline } = await import("@xenova/transformers");
     transcriber = await pipeline(
       "automatic-speech-recognition",
-      "Xenova/whisper-small"
+      "Xenova/whisper-base", {
+      quantized: true,
+    }
     );
+    const endTime = Date.now();
+    console.log(`Whisper model loaded in ${(endTime - startTime) / 1000} seconds`);
   }
   return transcriber;
 }
@@ -138,11 +169,13 @@ async function extractTextFromVideoBuffer(buffer) {
     const monoData = decoded.channelData[0]; // Float32Array
 
     // 6. Gọi Whisper với waveform thô + chunking
+    const startTime = Date.now();
     const result = await transcriber(monoData, {
       chunk_length_s: 30, // mỗi chunk 30s
       stride_length_s: 5, // overlap 5s giữa các chunk
     });
-
+    const endTime = Date.now();
+    console.log(`Whisper transcription took ${(endTime - startTime) / 1000} seconds`);
     let text = result.text || "";
 
     if (!text.trim()) {
@@ -158,10 +191,10 @@ async function extractTextFromVideoBuffer(buffer) {
   } finally {
     try {
       await fsp.unlink(videoPath);
-    } catch {}
+    } catch { }
     try {
       await fsp.unlink(audioPath);
-    } catch {}
+    } catch { }
   }
 }
 
@@ -210,9 +243,10 @@ const uploadMaterial = async (req, res) => {
     if (fileType === "video") {
       try {
         // Extract text từ video buffer
-        finalVideoExtractContent = await extractTextFromVideoBuffer(
-          req.file.buffer
-        );
+        // finalVideoExtractContent = await extractTextFromVideoBuffer(
+        //   req.file.buffer
+        // );
+        finalVideoExtractContent = await handleAssemblyAITranscription(publicUrl);
         console.log("Extracted text from video:", finalVideoExtractContent);
       } catch (err) {
         // Nếu lỗi, vẫn lưu processedContent nếu có
