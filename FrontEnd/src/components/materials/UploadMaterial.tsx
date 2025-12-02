@@ -45,7 +45,8 @@ export default function UploadMaterial(props: { onSuccess?: () => void }) {
 
         Swal.fire({
             title: "Đang xử lý",
-            html: "Vui lòng đợi trong giây lát!",
+            html: "<p>Vui lòng đợi trong giây lát!</p><br>Học liệu dạng video sẽ mất nhiều thời gian xử lý hơn, vui lòng kiên nhẫn",
+            
             icon: "info",
             showConfirmButton: false,
             showDenyButton: false,

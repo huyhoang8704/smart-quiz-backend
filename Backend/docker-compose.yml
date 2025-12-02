@@ -5,9 +5,9 @@ services:
     restart: unless-stopped
     build: .
     expose:
-      - "3000"
+      - "4000"
     ports:
-      - "4000:3000"
+      - "4000:4000"
     # Thêm các biến môi trường khác từ file .env của bạn vào đây
     # - MONGODB_URI=mongodb://...
     # Nếu muốn dùng hot-reload khi code (Development mode), bỏ comment dòng dưới:
