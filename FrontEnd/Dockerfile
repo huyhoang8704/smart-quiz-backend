@@ -1,11 +1,6 @@
 # Giai đoạn 1: Cài đặt dependencies
-FROM node:20-alpine AS deps
+FROM node:20 AS deps
 
-# Fix lỗi SSL certificate verify failed
-RUN sed -i 's/https/http/' /etc/apk/repositories
-
-# Thêm gói cần thiết cho Next.js trên Alpine
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Tăng timeout và retries cho NPM CI (Giải quyết ETIMEDOUT)
@@ -21,13 +16,14 @@ RUN if [ -f package-lock.json ]; then npm ci; \
 
 
 # Giai đoạn 2: Build ứng dụng
-FROM node:20-alpine AS builder
+FROM node:20 AS builder
 WORKDIR /app
+
+# Copy node_modules từ giai đoạn deps
+COPY --from=deps /app/node_modules ./node_modules
 
 # Copy tệp nguồn
 COPY . .
-# Copy node_modules từ giai đoạn deps
-COPY --from=deps /app/node_modules ./node_modules
 
 # Vô hiệu hóa Telemetry (Giữ nguyên)
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -36,7 +32,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Giai đoạn 3: Runner (Image cuối cùng)
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 # Nếu muốn nhỏ hơn nữa, hãy thử FROM node:20-slim (nhưng Alpine thường ổn định hơn cho Next.js)
 
 WORKDIR /app
