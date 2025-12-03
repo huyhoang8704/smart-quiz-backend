@@ -80,15 +80,13 @@ async function generateQuizWithText({
   const customInstructions = settings.customInstructions || "";
 
   const systemPrompt = `
-Bạn là trợ lý tạo đề trắc nghiệm chuyên nghiệp. Tạo câu hỏi dựa vào thông tin từ ${
-    materialsList.length
-  } tài liệu được cung cấp.
+Bạn là trợ lý tạo đề trắc nghiệm chuyên nghiệp. Tạo câu hỏi dựa vào thông tin từ ${materialsList.length
+    } tài liệu được cung cấp.
 Tạo câu hỏi chất lượng cao, phù hợp với yêu cầu cụ thể của người dùng về từng loại câu hỏi.
-${
-  materialsList.length > 1
-    ? "Kết hợp nội dung từ tất cả các tài liệu để tạo câu hỏi đa dạng và toàn diện."
-    : ""
-}
+${materialsList.length > 1
+      ? "Kết hợp nội dung từ tất cả các tài liệu để tạo câu hỏi đa dạng và toàn diện."
+      : ""
+    }
 Không lộ đáp án trong phần câu hỏi. Trả về JSON đúng định dạng.`;
 
   // Build detailed question requirements
@@ -133,11 +131,10 @@ Không lộ đáp án trong phần câu hỏi. Trả về JSON đúng định d�
           : "";
       return `${prefix}
 - Loại: ${mat.type}
-- Nội dung: "${
-        mat.type === "video"
+- Nội dung: "${mat.type === "video"
           ? mat.videoExtract || "Không có nội dung được xử lý"
           : mat.processedContent || "Không có nội dung được xử lý"
-      }"`;
+        }"`;
     })
     .join("\n");
 
@@ -149,11 +146,10 @@ ${materialsContent}
 - Cấu hình chi tiết: ${questionRequirements}${focusAreasText}${customInstructionsText}${customTitleText}
 
 Yêu cầu chi tiết:
-${
-  materialsList.length > 1
-    ? "- Kết hợp kiến thức từ TẤT CẢ các tài liệu để tạo câu hỏi đa dạng và toàn diện\n- Có thể tạo câu hỏi so sánh hoặc tổng hợp kiến thức từ nhiều tài liệu\n"
-    : ""
-}
+${materialsList.length > 1
+      ? "- Kết hợp kiến thức từ TẤT CẢ các tài liệu để tạo câu hỏi đa dạng và toàn diện\n- Có thể tạo câu hỏi so sánh hoặc tổng hợp kiến thức từ nhiều tài liệu\n"
+      : ""
+    }
 - Tạo chính xác số lượng câu hỏi theo từng loại đã chỉ định
 - Đảm bảo mức độ khó phù hợp cho từng loại câu hỏi:
   + MCQ (trắc nghiệm): tạo 3-4 lựa chọn hợp lý, 1 đáp án chính xác
@@ -329,16 +325,14 @@ const generateQuiz = async (req, res) => {
     for (const config of settings.questionConfigs) {
       if (!validTypes.includes(config.type)) {
         return res.status(400).json({
-          error: `Invalid question type: ${
-            config.type
-          }. Valid types: ${validTypes.join(", ")}`,
+          error: `Invalid question type: ${config.type
+            }. Valid types: ${validTypes.join(", ")}`,
         });
       }
       if (!validDifficulties.includes(config.difficulty)) {
         return res.status(400).json({
-          error: `Invalid difficulty: ${
-            config.difficulty
-          }. Valid difficulties: ${validDifficulties.join(", ")}`,
+          error: `Invalid difficulty: ${config.difficulty
+            }. Valid difficulties: ${validDifficulties.join(", ")}`,
         });
       }
       if (!config.count || config.count < 1 || config.count > 20) {
@@ -567,7 +561,7 @@ const getQuizById = async (req, res) => {
 // Lấy danh sách quiz theo giáo viên (ownerId)
 const getMyQuizzes = async (req, res) => {
   try {
-    const quizzes = await Quiz.find({ ownerId: req.user.id });
+    const quizzes = await Quiz.find({ ownerId: req.user.id }).sort({ createdAt: -1 });
     res.json(quizzes);
   } catch (error) {
     res.status(500).json({ error: error.message });
