@@ -255,6 +255,7 @@ export default function MaterialsTable() {
             <div className="min-w-[1102px] p-8">
               <DataTable data={tableData} className="overflow-hidden  rounded-xl  bg-white  dark:bg-white/[0.03]" columns={columns}
                 options={{
+                  order: [],
                   language: {
                     search: '_INPUT_',
                     searchPlaceholder: 'Nhập từ khoá muốn tìm kiếm',
