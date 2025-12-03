@@ -132,6 +132,7 @@ export default function QuizzTablesAttempts() {
               <DataTable
                 data={tableData}
                 options={{
+                  order: [],
                   language: {
                     search: '_INPUT_',
                     searchPlaceholder: 'Nhập từ khoá muốn tìm kiếm',
