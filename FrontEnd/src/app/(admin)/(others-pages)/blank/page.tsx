@@ -4,7 +4,7 @@ import React from "react";
 
 export const metadata: Metadata = {
   title: "Next.js Blank Page | Quản lý dự án phần mềm - Tạo Quiz",
-  description: "This is Next.js Blank Page TailAdmin Dashboard Template",
+  description: "",
 };
 
 export default function BlankPage() {

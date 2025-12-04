@@ -6,7 +6,7 @@ import React from "react";
 export const metadata: Metadata = {
   title: "Next.js Videos | Quản lý dự án phần mềm - Tạo Quiz",
   description:
-    "This is Next.js Videos page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
+    "",
 };
 
 export default function VideoPage() {
