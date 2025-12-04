@@ -9,7 +9,7 @@ import React from "react";
 export const metadata: Metadata = {
   title: "Next.js Profile | Quản lý dự án phần mềm - Tạo Quiz",
   description:
-    "This is Next.js Profile page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
+    "",
 };
 
 export default async function Profile() {

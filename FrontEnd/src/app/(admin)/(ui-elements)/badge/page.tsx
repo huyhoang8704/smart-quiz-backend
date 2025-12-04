@@ -7,7 +7,7 @@ import React from "react";
 export const metadata: Metadata = {
   title: "Next.js Badge | Quản lý dự án phần mềm - Tạo Quiz",
   description:
-    "This is Next.js Badge page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
+    "",
   // other metadata
 };
 
