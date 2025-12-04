@@ -5,6 +5,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs").promises;
 const path = require("path");
 const mongoose = require("mongoose");
+const { compareUserAnswer, parseExpectedAnswers } = require("../utils/fillblankGrader");
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -704,10 +705,25 @@ const attemptQuiz = async (req, res) => {
         return;
       }
 
-      const correctAns = question.answer.trim().toLowerCase();
-      const userAns = userAnswer.answer.trim().toLowerCase();
+      let isCorrect = false;
 
-      let isCorrect = userAns === correctAns;
+      if (question.type === "fillblank") {
+        isCorrect = compareUserAnswer(
+          userAnswer.answer,
+          parseExpectedAnswers(question.answer, { delimiter: ',' }),
+          {
+            unordered: false,
+            removeAccents: true,
+            lower: true,
+            stripParenthetical: true,
+            delimiter: ',',
+          }
+        ).score === 1;
+      } else {
+        const correctAns = question.answer.trim().toLowerCase();
+        const userAns = userAnswer.answer.trim().toLowerCase();
+        isCorrect = userAns === correctAns;
+      }
 
       if (isCorrect) correctCount++;
 
